@@ -1,0 +1,17 @@
+﻿namespace Smart_Parking_Garage.Helpers;
+
+public static class EmailBodyBuilder
+{
+    public static string GenerateEmailBody(string Template,Dictionary<string,string> TemplateModel)
+    {
+        var templatePath=$"{Directory.GetCurrentDirectory()}/Templates/{Template}.html";
+        var streamReader=new StreamReader(templatePath);
+        var body = streamReader.ReadToEnd();
+        streamReader.Close();
+        foreach (var item in TemplateModel)
+        {
+            body = body.Replace(item.Key, item.Value);
+        }
+        return body;
+    }
+}
