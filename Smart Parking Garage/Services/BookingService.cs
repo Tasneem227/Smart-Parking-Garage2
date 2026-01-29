@@ -22,7 +22,10 @@ public class BookingService(ApplicationDbContext context,IHttpContextAccessor ht
         {
             Booking booking = request.Adapt<Booking>();
             booking.ParkingSlotId = slot.ParkingSlotId;
-            booking.ApplicationUserId = _HttpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier); ;
+            if (request.ApplicationUserId == null)
+            {
+                booking.ApplicationUserId = _HttpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            }
             booking.Status = "Active";
             if (booking != null) { 
                 await  _Context.AddAsync(booking,cancellationToken);
@@ -102,5 +105,27 @@ public class BookingService(ApplicationDbContext context,IHttpContextAccessor ht
         await _Context.SaveChangesAsync(cancellationToken);
 
         return true;
+    }
+
+    public async Task DeleteByLastBookingByUserId(string userid, CancellationToken cancellationToken = default)
+    {
+        var booking = await _Context.Bookings
+       .Where(b => b.ApplicationUserId == userid)
+       .OrderByDescending(b => b.BookingStart)
+       .ThenByDescending(b => b.BookingId)
+       .FirstOrDefaultAsync(cancellationToken);
+
+        if (booking == null)
+            throw new Exception("No booking found for this user");
+
+        var parkingSlot = await _Context.ParkingSlots
+            .FirstOrDefaultAsync(p => p.ParkingSlotId == booking.ParkingSlotId, cancellationToken);
+
+        if (parkingSlot != null)
+            parkingSlot.IsOccupied = false;
+
+        _Context.Bookings.Remove(booking);
+        await _Context.SaveChangesAsync();
+
     }
 }

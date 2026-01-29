@@ -13,12 +13,12 @@ public class BookingRequestValidator:AbstractValidator<BookingRequest>
             .NotEmpty().WithMessage("StartTime is required.")
             .GreaterThan(DateTime.UtcNow).WithMessage("StartTime must be in the future.");
 
-        RuleFor(x => x.BookingEnd)
-            .NotEmpty().WithMessage("EndTime is required.");
 
-        RuleFor(x => x)
-            .Must(x => x.BookingEnd > x.BookingStart)
-            .WithMessage("EndTime must be greater than StartTime.");
+        RuleFor(x => x.BookingEnd)
+        .GreaterThan(x => x.BookingStart)
+        .When(x => x.BookingEnd.HasValue)
+        .WithMessage("EndTime must be greater than StartTime.");
+
 
         //RuleFor(x => x)
         //    .Must(x => (x.BookingEnd - x.BookingStart).TotalHours <= 24)

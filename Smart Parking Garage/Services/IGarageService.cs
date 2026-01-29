@@ -9,6 +9,7 @@ public interface IGarageService
     Task CreateAsync(GarageCreate dto);
     Task<bool> UpdateAsync(int id, GarageCreate dto);
     Task<bool> DeleteAsync(int id);
-
+    Task<GarageSlotsStatus?> GetSlotsStatusByGarageIdAsync(int garageId, CancellationToken cancellationToken=default);
+  
     Task<List<GarageLocation>> GetAllGarageLocationsAsync(CancellationToken cancellationToken);
 }

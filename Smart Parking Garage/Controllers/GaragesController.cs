@@ -19,7 +19,22 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         return Ok(garages);
     }
 
-    
+
+
+    [HttpGet("slots-status/{garageId}")]
+    public async Task<IActionResult> GetSlotsStatus(
+    int garageId,
+    CancellationToken cancellationToken = default)
+    {
+        var result = await _garageService
+            .GetSlotsStatusByGarageIdAsync(garageId, cancellationToken);
+
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll()
         => Ok(await _garageService.GetAllAsync());

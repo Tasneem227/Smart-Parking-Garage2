@@ -13,7 +13,6 @@ public class ParkingSlotsController(IParkingSlotService parkingSlotService) : Co
     private readonly IParkingSlotService _parkingSlotService = parkingSlotService;
         
     [HttpGet("AllSlots")]
-    [Authorize]
     public async Task<IActionResult> GetAllSlots(CancellationToken cancellationToken)
     {
         var allSlots = await _parkingSlotService.GetAllSlotsAsync(cancellationToken);

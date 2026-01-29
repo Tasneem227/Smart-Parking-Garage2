@@ -17,16 +17,43 @@ public class GarageService:IGarageService
     {
 
         return await _context.Garages
-            .Where(g => g.IsActive)
-            .Select(g => new GarageLocation
+       .Where(g => g.IsActive)
+       .Select(g => new GarageLocation
+       {
+           GarageId = g.GarageId,
+           GarageName=g.Name,
+           Latitude = g.Latitude,
+           Longitude = g.Longitude,
+           Slots = g.ParkingSlots.Select(s => new GarageSlots
+           {
+               SlotId = s.ParkingSlotId,
+               Slotnumber= s.SlotNumber,
+               Status = s.IsOccupied ? "Occupied" : "Available"
+           }).ToList()
+       })
+       .ToListAsync(cancellationToken);
+    }
+    public async Task<GarageSlotsStatus?> GetSlotsStatusByGarageIdAsync(
+    int garageId,
+    CancellationToken cancellationToken)
+    {
+        return await _context.Garages
+            .Where(g => g.GarageId == garageId && g.IsActive)
+            .Select(g => new GarageSlotsStatus
             {
                 GarageId = g.GarageId,
-                Latitude = g.Latitude,
-                Longitude = g.Longitude
+                TotalSlots = g.ParkingSlots.Count(),
+                AvailableSlots = g.ParkingSlots.Count(s => !s.IsOccupied),
+                Slots = g.ParkingSlots.Select(s => new SlotStatus
+                {
+                    SlotId = s.ParkingSlotId,
+                    Slotnumber = s.SlotNumber,
+                    SalaryPerHour=s.PricePerHour,
+                    Status = s.IsOccupied ? "Occupied" : "Available"
+                }).ToList()
             })
-            .ToListAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
     }
-
     public async Task<List<Garage>> GetAllAsync()
     {
         return await _context.Garages

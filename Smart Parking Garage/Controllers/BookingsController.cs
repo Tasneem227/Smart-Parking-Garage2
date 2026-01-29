@@ -12,7 +12,6 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     private readonly IBookingService _BookingService = bookingService;
 
     [HttpPost]
-    [Authorize]
     public async Task<IActionResult> AddBookingAsync([FromBody]BookingRequest request,CancellationToken cancellationToken)
     {
         var response =await _BookingService.AddBooking(request,cancellationToken);
@@ -76,5 +75,22 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         await _BookingService.DeleteByIdAsync(id, cancellationToken);
         return NoContent();
     }
+
+    [HttpDelete("last-booking/{userId}")]
+    public async Task<IActionResult> DeleteLastBookingByUserId(
+    string userId,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _BookingService.DeleteByLastBookingByUserId(userId, cancellationToken);
+            return Ok("Last booking deleted successfully");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
 
 }

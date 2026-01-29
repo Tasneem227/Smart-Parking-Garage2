@@ -9,7 +9,5 @@ public interface IBookingService
     Task<List<BookingResponse>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default);
     Task<BookingResponse> UpdateBookingTimeAsync(int id, updateBookingTimeRequest request, CancellationToken cancellationToken);
     Task<bool> UpdateBookingStatusAsync(int id, UpdateBookingStatusRequest status, CancellationToken cancellationToken);
-
-
-
+    Task DeleteByLastBookingByUserId(string userid, CancellationToken cancellationToken = default);
 }
