@@ -14,12 +14,18 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddBookingAsync([FromBody]BookingRequest request,CancellationToken cancellationToken)
     {
-        var response =await _BookingService.AddBooking(request,cancellationToken);
-        if(response == null)
-        {
-            return BadRequest("Invalid Booking");
+        try{
+            var response = await _BookingService.AddBooking(request, cancellationToken);
+            if (response == null)
+            {
+                return BadRequest("Invalid Booking");
+            }
+            return Ok(response);
         }
-        return Ok(response);
+        catch(Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
     [HttpGet("")]
     public async Task<IActionResult> GetAllBookingsAsync(CancellationToken cancellationToken)

@@ -16,7 +16,7 @@ public class BookingService(ApplicationDbContext context,IHttpContextAccessor ht
     public async Task<BookingResponse> AddBooking (BookingRequest request,CancellationToken cancellationToken=default)
     {
         //handle to allow booking if ater the slot book time
-        var slot= _Context.ParkingSlots?.FirstOrDefault(b=>b.SlotNumber==request.SlotNumber);
+        var slot= _Context.ParkingSlots?.FirstOrDefault(b=>b.SlotNumber==request.SlotNumber && b.GarageId==request.GarageId);
         var isOccupied = slot?.IsOccupied;
         if (!(bool)isOccupied)
         {
