@@ -22,25 +22,23 @@ public class AuthController(IAuthService authService, IConfiguration configurati
     public async Task<IActionResult> LoginAsync([FromBody]LoginRequestUser loginRequest,CancellationToken cancellationToken)
     {
         var authResult= await _AuthService.GetTokenAsync(loginRequest.Email, loginRequest.Password, cancellationToken);
-        
-            return authResult==null? BadRequest("Invalid UserName/Password") : Ok(authResult);
+
+        return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
 
     }
     [HttpPost("RefreshToken")]
-    public async Task<IActionResult> RefreshAsync([FromBody]RefreshTokenRequest refreshTokenRequest, CancellationToken cancellationToken)
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var authResult = await _AuthService.GetRefreshTokenAsync(refreshTokenRequest.Token,refreshTokenRequest.RefreshToken, cancellationToken);
+        var authResult = await _AuthService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-        return authResult == null ? BadRequest("Invalid Token") : Ok(authResult);
-
+        return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }
     [HttpPost("revoke-refresh-token")]
-    public async Task<IActionResult> RevokeRefreshTokenAsync([FromBody] RefreshTokenRequest refreshTokenRequest, CancellationToken cancellationToken)
+    public async Task<IActionResult> RevokeRefreshToken([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        var isRevoked = await _AuthService.RevokeRefreshTokenAsync(refreshTokenRequest.Token, refreshTokenRequest.RefreshToken, cancellationToken);
+        var result = await _AuthService.RevokeRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
-        return isRevoked==true? Ok() : BadRequest("Operation Faild");
-
+        return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync([FromBody] registerRequest registerRequest, CancellationToken cancellationToken)
@@ -51,28 +49,28 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
     }
 
-    [HttpGet("ConfirmEmail")]
+    //[HttpGet("ConfirmEmail")]
 
-    public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string UserId, [FromQuery] string code, CancellationToken cancellationToken)
-    {
-        var request = new ConfirmEmailRequest
-        {
-            UserId = UserId,
-            code = code
-        };
-        var Result = await _AuthService.ConfirmEmailAsync(request);
+    //public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string UserId, [FromQuery] string code, CancellationToken cancellationToken)
+    //{
+    //    var request = new ConfirmEmailRequest
+    //    {
+    //        UserId = UserId,
+    //        code = code
+    //    };
+    //    var Result = await _AuthService.ConfirmEmailAsync(request);
 
-        return Result.IsFailure ? Result.ToProblem() : Ok();
+    //    return Result.IsFailure ? Result.ToProblem() : Ok();
 
-    }
-    [HttpPost("ResendConfirmEmail")]
-    public async Task<IActionResult> ResendConfirmEmailAsync([FromBody] ResendConfirmationEmailRequest request, CancellationToken cancellationToken)
-    {
-        var Result = await _AuthService.ResendConfirmEmailAsync(request);
+    //}
+    //[HttpPost("ResendConfirmEmail")]
+    //public async Task<IActionResult> ResendConfirmEmailAsync([FromBody] ResendConfirmationEmailRequest request, CancellationToken cancellationToken)
+    //{
+    //    var Result = await _AuthService.ResendConfirmEmailAsync(request);
 
-        return Result.IsFailure ? Result.ToProblem() : Ok();
+    //    return Result.IsFailure ? Result.ToProblem() : Ok();
 
-    }
+    //}
 
     //[HttpGet("")]
     //public IActionResult Test()

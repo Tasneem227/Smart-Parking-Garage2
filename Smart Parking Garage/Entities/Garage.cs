@@ -1,4 +1,6 @@
-﻿namespace Smart_Parking_Garage.Entities;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Smart_Parking_Garage.Entities;
 
 public class Garage
 {
@@ -18,6 +20,10 @@ public class Garage
 
     public bool IsActive { get; set; }
 
-    // Navigation Properties
+    [ForeignKey("ApplicationUserId")]
+    public string? OwnerId { get; set; }
+
+    [ForeignKey(nameof(OwnerId))]
+    public ApplicationUser ?Owner { get; set; }
     public ICollection<ParkingSlot>? ParkingSlots { get; set; }
 }

@@ -3,14 +3,18 @@ using FluentValidation.AspNetCore;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Smart_Parking_Garage.Authentication;
+using Smart_Parking_Garage.Authentication.Filters;
 using Smart_Parking_Garage.Entities;
-using Smart_Parking_Garage.Persistance;
+using Smart_Parking_Garage.Persistence;
 using Smart_Parking_Garage.Services;
 using Smart_Parking_Garage.Settings;
 using System.Reflection;
@@ -25,11 +29,11 @@ public static class DependencyInjection
         throw new InvalidOperationException("Connection String 'DefaultConnection' not found ");
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(ConnectionString));
 
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-
+        services.AddHttpClient<AiChatService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailSender, EmailSender>();
@@ -37,7 +41,8 @@ public static class DependencyInjection
         services.AddScoped<IParkingSlotService, ParkingSlotService>();
         services.AddScoped<IGateService, GateService>();
         services.AddScoped<IGarageService, GarageService>();
-
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 
@@ -52,12 +57,47 @@ public static class DependencyInjection
     }
     private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
     {
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Smart Parking Garage API",
+                Version = "v1"
+            });
+
+            // 🔐 JWT Security Definition
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter JWT token like: Bearer {your token}"
+            });
+
+            // 🔐 Apply JWT globally
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+        });
 
         return services;
     }
+
     private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
     {
         var mappingConfig = TypeAdapterConfig.GlobalSettings;
@@ -74,7 +114,15 @@ public static class DependencyInjection
       .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         return services;
     }
-    private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration) { 
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration) {
+
+
+
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+
+
         //JWT Configurations
         // Read the "Jwt" section from appsettings.json and map it to JwtOptions class
         var settings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
@@ -134,11 +182,12 @@ public static class DependencyInjection
         services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 8;
-            options.SignIn.RequireConfirmedEmail = true;
+            //options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
            
         });
 
         return services;
     }
+
 }

@@ -7,7 +7,8 @@ public class ApplicationUser : IdentityUser
   
     public string FirstName { get; set; }
     public string LastName { get; set; }
-    public int PriorityLevel { get; set; }  
+    public int PriorityLevel { get; set; }
+    public bool IsDisabled { get; set; }
 
     // Navigation
     public ICollection<Booking>? Bookings { get; set; }

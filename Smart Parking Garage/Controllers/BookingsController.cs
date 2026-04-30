@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Parking_Garage.Authentication.Filters;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Services;
 using System.Security.Claims;
 
@@ -11,6 +13,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
 {
     private readonly IBookingService _BookingService = bookingService;
 
+    [HasPermission(Permissions.AddBookings)]
     [HttpPost]
     public async Task<IActionResult> AddBookingAsync([FromBody]BookingRequest request,CancellationToken cancellationToken)
     {
@@ -28,6 +31,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
     }
     [HttpGet("")]
+    [HasPermission(Permissions.GetBookings)]
     public async Task<IActionResult> GetAllBookingsAsync(CancellationToken cancellationToken)
     {
         var response = await _BookingService.GetAllAsync(cancellationToken);
@@ -37,6 +41,8 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
         return Ok(response);
     }
+
+    [HasPermission(Permissions.GetBookingById)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookingByIdAsync([FromRoute]int id,CancellationToken cancellationToken)
     {
@@ -47,6 +53,8 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
         return Ok(response);
     }
+
+    [HasPermission(Permissions.GetBookings)]
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetBookingByUserIdAsync([FromRoute] string userId, CancellationToken cancellationToken)
     {
@@ -57,7 +65,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
         return Ok(response);
     }
-
+    [HasPermission(Permissions.UpdateBookings)]
     [HttpPut("{Id}")]
     public async Task<IActionResult> UpdateBookingTimeAsync([FromRoute] int Id, [FromBody]updateBookingTimeRequest request ,CancellationToken cancellationToken)
     {
@@ -68,20 +76,21 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
         return Ok(response);
     }
+    [HasPermission(Permissions.UpdateBookings)]
     [HttpPut("updateBookingStatus/{Id}")]
     public async Task<IActionResult> UpdateBookingStatusAsync([FromRoute] int Id, [FromBody] UpdateBookingStatusRequest status , CancellationToken cancellationToken)
     {
       var result= await _BookingService.UpdateBookingStatusAsync(Id, status, cancellationToken);
         return result == true ? Ok("Status updated successfully") : BadRequest("Invalid Booking Id");
             }
-
+    [HasPermission(Permissions.DeleteBookingById)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBookingByIdAsync([FromRoute] int id, CancellationToken cancellationToken)
     {
         await _BookingService.DeleteByIdAsync(id, cancellationToken);
         return NoContent();
     }
-
+    [HasPermission(Permissions.DeleteBookingsByUserId)]
     [HttpDelete("last-booking/{userId}")]
     public async Task<IActionResult> DeleteLastBookingByUserId(
     string userId,

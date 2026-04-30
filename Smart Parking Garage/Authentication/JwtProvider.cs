@@ -1,11 +1,12 @@
 ﻿
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Smart_Parking_Garage.Entities;
 using Smart_Parking_Garage.Settings;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 
 namespace Smart_Parking_Garage.Authentication;
 
@@ -14,14 +15,16 @@ public class JwtProvider(IOptions<JwtOptions> options) : IJwtProvider
 {
     private readonly JwtOptions _Options = options.Value;
 
-    public (string token, int expiresIn) GenerateToken(ApplicationUser user)
+    public (string token, int expiresIn) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
         Claim[] claims = [
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), //unique identifier for the token
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray),
+            new(nameof(permissions), JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray) //unique identifier for the token
         ];
         var SymmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Options.Key));
         var SigningCredentials = new SigningCredentials(SymmetricSecurityKey, SecurityAlgorithms.HmacSha256); // algorithm to sign the token to ensure its integrity

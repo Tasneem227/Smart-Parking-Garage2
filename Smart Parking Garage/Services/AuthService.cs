@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Smart_Parking_Garage.Authentication;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Authentication;
 using Smart_Parking_Garage.Entities;
 using Smart_Parking_Garage.Errors;
@@ -21,7 +22,8 @@ public class AuthService(UserManager<ApplicationUser> userManager,
                         SignInManager<ApplicationUser> signInManager
                         , ILogger<AuthService> logger,
                         IHttpContextAccessor httpContextAccessor
-                        , IEmailSender emailSender) : IAuthService
+                        , IEmailSender emailSender
+                        ,ApplicationDbContext context) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _UserManager = userManager;
     private readonly IJwtProvider _JwtProvider = jwtProvider;
@@ -29,85 +31,112 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     private readonly ILogger<AuthService> _Logger = logger;
     private readonly IHttpContextAccessor _HttpContextAccessor = httpContextAccessor;
     private readonly IEmailSender _EmailSender = emailSender;
+    private readonly ApplicationDbContext _Context = context;
     private readonly int _refreshTokenExpiryDays = 14;
 
-    public async Task<AuthResponse?> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
     {
-        //Check User
-        var user = await _UserManager.FindByEmailAsync(email);
-        if (user == null)
-            return null;
-        //Check Password
-        var PasswordResult = await _SignInManager.PasswordSignInAsync(user, password, false, false);
-        if (PasswordResult.Succeeded)
-        {
-            //Generate JWT Token
-            var (token, expiresIn) = _JwtProvider.GenerateToken(user);
-            var refreshToken = GenerateRefreshToken();
-            var refreshTokenExpirtion = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+        if (await _UserManager.FindByEmailAsync(email) is not { } user)
+            return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
-            user.RefreshTokens.Add(new RefreshToken { Token = refreshToken, ExpiresOn = refreshTokenExpirtion });
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
+
+        var result = await _SignInManager.PasswordSignInAsync(user, password, false, true);
+
+        if (result.Succeeded)
+        {
+            var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
+            var (token, expiresIn) = _JwtProvider.GenerateToken(user, userRoles, userPermissions);
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+
+            user.RefreshTokens.Add(new RefreshToken
+            {
+                Token = refreshToken,
+                ExpiresOn = refreshTokenExpiration
+            });
+
             await _UserManager.UpdateAsync(user);
 
-            var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpirtion);
-            return response;
+            var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpiration);
+
+            return Result.Success(response);
         }
-        return null;
+
+        var error = result.IsNotAllowed
+            ? UserErrors.EmailNotConfirmed
+            : result.IsLockedOut
+            ? UserErrors.LockedUser
+            : UserErrors.InvalidCredentials;
+
+        return Result.Failure<AuthResponse>(error);
     }
-
-
-    public async Task<AuthResponse?> GetRefreshTokenAsync(string token, string RefreshToken, CancellationToken cancellationToken = default)
+    public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
     {
         var userId = _JwtProvider.ValidateToken(token);
-        if (userId == null)
-            return null;
 
-        var user = await _UserManager.FindByIdAsync(userId);
-        if (user == null) 
-            return null;
-
-        var existingRefreshToken = user.RefreshTokens.SingleOrDefault(rt => rt.Token == RefreshToken && rt.IsActive);
-        if (existingRefreshToken == null)
-            return null;
-
-        existingRefreshToken.RevokedOn = DateTime.UtcNow;
-
-        var (newtoken, expiresIn) = _JwtProvider.GenerateToken(user);
-        var newrefreshToken = GenerateRefreshToken();
-        var refreshTokenExpirtion = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
-
-        user.RefreshTokens.Add(new RefreshToken { Token = newtoken, ExpiresOn = refreshTokenExpirtion });
-        await _UserManager.UpdateAsync(user);
-
-        var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newtoken, expiresIn, newrefreshToken, refreshTokenExpirtion);
-        return response;
-
-
-    }
-
-    public async Task<bool> RevokeRefreshTokenAsync(string token, string RefreshToken, CancellationToken cancellationToken = default)
-    {
-        var userId = _JwtProvider.ValidateToken(token);
-        if (userId == null)
-            return false;
+        if (userId is null)
+            return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
 
         var user = await _UserManager.FindByIdAsync(userId);
 
-        if (user == null)
-            return false;
+        if (user is null)
+            return Result.Failure<AuthResponse>(UserErrors.InvalidJwtToken);
 
-        var existingRefreshToken = user.RefreshTokens.SingleOrDefault(
-            rt => rt.Token == RefreshToken && rt.IsActive
-            );
+        if (user.IsDisabled)
+            return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
 
-        if (existingRefreshToken == null)
-            return false;
+        if (user.LockoutEnd > DateTime.UtcNow)
+            return Result.Failure<AuthResponse>(UserErrors.LockedUser);
 
-        //Revoke  Refresh Token
-        existingRefreshToken.RevokedOn = DateTime.UtcNow;
+        var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
+
+        if (userRefreshToken is null)
+            return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken);
+
+        userRefreshToken.RevokedOn = DateTime.UtcNow;
+
+        var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
+
+        var (newToken, expiresIn) = _JwtProvider.GenerateToken(user, userRoles, userPermissions);
+        var newRefreshToken = GenerateRefreshToken();
+        var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+
+        user.RefreshTokens.Add(new RefreshToken
+        {
+            Token = newRefreshToken,
+            ExpiresOn = refreshTokenExpiration
+        });
+
         await _UserManager.UpdateAsync(user);
 
-        return true;
+        var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
+
+        return Result.Success(response);
+    }
+    public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
+    {
+        var userId = _JwtProvider.ValidateToken(token);
+
+        if (userId is null)
+            return Result.Failure(UserErrors.InvalidJwtToken);
+
+        var user = await _UserManager.FindByIdAsync(userId);
+
+        if (user is null)
+            return Result.Failure(UserErrors.InvalidJwtToken);
+
+        var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
+
+        if (userRefreshToken is null)
+            return Result.Failure(UserErrors.InvalidRefreshToken);
+
+        userRefreshToken.RevokedOn = DateTime.UtcNow;
+
+        await _UserManager.UpdateAsync(user);
+
+        return Result.Success();
     }
 
 
@@ -119,6 +148,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         {
             return Result.Failure<AuthResponse?>(UserErrors.DuplicatedEmail);
         }
+
         var user = request.Adapt<ApplicationUser>();
         var result = await _UserManager.CreateAsync(user, request.Password);
         if (result.Succeeded)
@@ -126,9 +156,10 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             var code = await _UserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             _Logger.LogInformation("Confirmation Code :{code}", code);
-
+            await _UserManager.AddToRoleAsync(user, DefaultRoles.Member);
             //send email
             SendConfirmationEmail(user, code);
+
             return Result.Success();
         }
 
@@ -188,7 +219,6 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     }
 
 
-
     private async Task SendConfirmationEmail(ApplicationUser user, string code)
     {
         var origin = _HttpContextAccessor.HttpContext?.Request.Headers.Origin;
@@ -202,6 +232,21 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         );
 
         await _EmailSender.SendEmailAsync(user.Email!, "✅ Smart Parking System : Email Confirmation", emailBody);
+    }
+
+    private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRolesAndPermissions(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        var userRoles = await _UserManager.GetRolesAsync(user);
+
+        var userPermissions = await (from r in _Context.Roles
+                                     join p in _Context.RoleClaims
+                                     on r.Id equals p.RoleId
+                                     where userRoles.Contains(r.Name!)
+                                     select p.ClaimValue!)
+                                     .Distinct()
+                                     .ToListAsync(cancellationToken);
+
+        return (userRoles, userPermissions);
     }
     public static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 }

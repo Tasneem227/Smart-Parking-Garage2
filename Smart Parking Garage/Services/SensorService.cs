@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Smart_Parking_Garage.Contracts.SensorReading;
-using Smart_Parking_Garage.Persistance;
+using Smart_Parking_Garage.Persistence;
 using System.Text.Json;
 
 namespace Smart_Parking_Garage.Services;
@@ -33,13 +33,13 @@ public class SensorService(ApplicationDbContext context):ISensorService
     public async Task UpdateFromSensorAsync(ParkingDataJson data)
     {
 
-        var slot1 = await _context.ParkingSlots.FirstAsync(s => s.SlotNumber == "1");
+        var slot1 = await _context.ParkingSlots.FirstAsync(s => s.SlotNumber == "1"&& s.GarageId==1);
         slot1.IsOccupied = data.Slot1;
 
-        var slot2 = await _context.ParkingSlots.FirstAsync(s => s.SlotNumber == "2");
+        var slot2 = await _context.ParkingSlots.FirstAsync(s => s.SlotNumber == "2"&& s.GarageId == 1);
         slot2.IsOccupied = data.Slot2;
 
-        var slot3 = await _context.ParkingSlots.FirstAsync(s => s.SlotNumber == "3");
+        var slot3 = await _context.ParkingSlots.FirstAsync(s => s.SlotNumber == "3" && s.GarageId == 1);
         slot3.IsOccupied = data.Slot3;
 
         var entryGate = await _context.Gates.FirstAsync(g => g.GateType == "EntryGate");

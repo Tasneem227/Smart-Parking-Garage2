@@ -2,7 +2,7 @@
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Smart_Parking_Garage.Entities;
-using Smart_Parking_Garage.Persistance;
+using Smart_Parking_Garage.Persistence;
 using System.Security.Claims;
 
 namespace Smart_Parking_Garage.Services;

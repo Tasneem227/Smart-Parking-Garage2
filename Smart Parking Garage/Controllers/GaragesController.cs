@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Parking_Garage.Authentication.Filters;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Garage;
 
 namespace Smart_Parking_Garage.Controllers;
@@ -9,8 +11,9 @@ public class GaragesController(IGarageService garageService) : ControllerBase
 {
     private readonly IGarageService _garageService=garageService;
 
-    
+
     // Returns all garages locations (Id, Latitude, Longitude)
+    [HasPermission(Permissions.GetGarages)]
     [HttpGet("locations")]
     public async Task<IActionResult> GetAllGarageLocations(CancellationToken cancellationToken=default)
     {
@@ -20,7 +23,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
     }
 
 
-
+    [HasPermission(Permissions.GetGaragesStatus)]
     [HttpGet("slots-status/{garageId}")]
     public async Task<IActionResult> GetSlotsStatus(
     int garageId,
@@ -35,11 +38,13 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         return Ok(result);
     }
 
+    [HasPermission(Permissions.GetGarages)]
     [HttpGet]
     public async Task<IActionResult> GetAll()
         => Ok(await _garageService.GetAllAsync());
 
 
+    [HasPermission(Permissions.GetGarageById)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -47,7 +52,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         return garage == null ? NotFound() : Ok(garage);
     }
 
-  
+    [HasPermission(Permissions.AddGarages)]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] GarageCreate dto)
     {
@@ -55,7 +60,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         return Ok();
     }
 
-    
+    [HasPermission(Permissions.UpdateGarages)]
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] GarageCreate dto)
     {
@@ -63,7 +68,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         return updated ? NoContent() : NotFound();
     }
 
-    
+    [HasPermission(Permissions.DeleteGarages)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
