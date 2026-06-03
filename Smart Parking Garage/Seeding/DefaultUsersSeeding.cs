@@ -99,11 +99,15 @@ public class DefaultUsersSeeding
     {
         var adminRole = await roleManager.FindByNameAsync(DefaultRoles.Admin);
         var ownerRole = await roleManager.FindByNameAsync(DefaultRoles.GarageOwner);
+        var userRole = await roleManager.FindByNameAsync(DefaultRoles.Member);
 
         if (adminRole == null)
             throw new Exception("Admin role not found");
 
         if (ownerRole == null)
+            throw new Exception("Owner role not found");
+
+        if (userRole == null)
             throw new Exception("Owner role not found");
 
         var allPermissions = Permissions.GetAllPermissions();
@@ -113,9 +117,25 @@ public class DefaultUsersSeeding
         {
             Permissions.GetGarageById
         };
-
+        var UserNewPermissions = new List<string>
+        {
+            Permissions.GetGarageById,
+            Permissions.GetGarages,
+            Permissions.GetGates,
+            Permissions.GetBookingById,
+            Permissions.GetGaragesStatus,
+            Permissions.GetParkingSlots,
+            Permissions.GetParkingSlotsById,
+            Permissions.SendChatbotMessage,
+            Permissions.UpdateParkingSlots,
+            Permissions.DeleteBookingsByUserId,
+            Permissions.UpdateBookings,
+            
+            
+        };
         await AddPermissions(roleManager, adminRole, allPermissions);
         await AddPermissions(roleManager, ownerRole, garageOwnerNewPermissions);
+        await AddPermissions(roleManager, userRole, UserNewPermissions);
     }
     private static async Task AddPermissions(
      RoleManager<ApplicationRole> roleManager,
