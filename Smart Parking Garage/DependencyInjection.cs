@@ -32,7 +32,7 @@ public static class DependencyInjection
         services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
-
+        
         services.AddHttpClient<AiChatService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IAuthService, AuthService>();
@@ -43,6 +43,9 @@ public static class DependencyInjection
         services.AddScoped<IGarageService, GarageService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddHostedService<BookingReminderService>();
+        services.AddHostedService<GarageMonitorService>();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 
