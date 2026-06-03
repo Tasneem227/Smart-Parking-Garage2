@@ -54,7 +54,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         return Ok(response);
     }
 
-    [HasPermission(Permissions.GetBookings)]
+    [HasPermission(Permissions.GetBookingByUserId)]
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetBookingByUserIdAsync([FromRoute] string userId, CancellationToken cancellationToken)
     {
