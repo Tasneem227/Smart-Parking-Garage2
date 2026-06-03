@@ -14,6 +14,7 @@ public class AccountController(IUserService userService) : ControllerBase
     [HttpGet("Profile")]
     public async Task<IActionResult> Profile()
     {
+       
         var result = await _UserService.GetProfileAsync(User.GetUserId()!);
 
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
