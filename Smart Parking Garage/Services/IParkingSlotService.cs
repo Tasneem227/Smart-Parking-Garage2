@@ -15,4 +15,7 @@ public interface IParkingSlotService
     Task<IEnumerable<ParkingSlot>> GetAvailableSlotsAsync(CancellationToken cancellationToken = default);
 
     Task<bool> ToggleOccupancyAsync(int id, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<ParkingSlot>>GetSlotsByGarageIdAsync( int garageId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ParkingSlot>?> GetAvailableSlotsByGarageIdAsync(int garageId,CancellationToken cancellationToken = default);
 }

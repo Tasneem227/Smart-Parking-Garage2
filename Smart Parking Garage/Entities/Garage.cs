@@ -26,4 +26,6 @@ public class Garage
     [ForeignKey(nameof(OwnerId))]
     public ApplicationUser ?Owner { get; set; }
     public ICollection<ParkingSlot>? ParkingSlots { get; set; }
+    public ICollection<Gate>? Gates { get; set; }
+    public ICollection<Booking>? Bookings { get; set; }
 }
