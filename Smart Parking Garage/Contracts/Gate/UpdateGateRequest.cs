@@ -4,4 +4,5 @@ public record UpdateGateRequest(
  string? GateType ,
  string? DeviceId ,
 string? Status 
+
     );

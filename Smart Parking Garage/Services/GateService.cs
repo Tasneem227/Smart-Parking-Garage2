@@ -21,6 +21,13 @@ public class GateService(ApplicationDbContext context) : IGateService
 
     public async Task<Gate> CreateGateAsync(Gate gate, CancellationToken cancellationToken = default)
     {
+        var garageExists = await _context.Garages
+        .AnyAsync(x => x.GarageId == gate.GarageId,
+              cancellationToken);
+
+        if (!garageExists)
+            throw new Exception("Garage not found");
+
         _context.Gates.Add(gate);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -36,24 +43,32 @@ public class GateService(ApplicationDbContext context) : IGateService
 
         currentGate.GateType = gate.GateType;
         currentGate.DeviceId = gate.DeviceId;
-      
+        currentGate.Status = gate.Status;
+
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> UpdateGateStatusAsync(int id, string status, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateGateStatusAsync(
+      int id,
+      CancellationToken cancellationToken = default)
     {
         var currentGate = await GetGateByIdAsync(id, cancellationToken);
+
         if (currentGate == null)
             return false;
 
+        if (currentGate.Status.Equals("Open", StringComparison.OrdinalIgnoreCase))
+            currentGate.Status = "Closed";
+        else if (currentGate.Status.Equals("Closed", StringComparison.OrdinalIgnoreCase))
+            currentGate.Status = "Open";
+        else
+            return false; 
 
-        currentGate.Status = status;
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;
     }
-
     public async Task<bool> DeleteGateAsync(int id, CancellationToken cancellationToken = default)
     {
         var Gate = await GetGateByIdAsync(id, cancellationToken);
@@ -64,6 +79,18 @@ public class GateService(ApplicationDbContext context) : IGateService
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
+    public async Task<IEnumerable<Gate>?> GetGatesByGarageIdAsync(
+        int garageId,
+        CancellationToken cancellationToken = default)
+    {
+        var garageExists = await _context.Garages
+            .AnyAsync(g => g.GarageId == garageId, cancellationToken);
 
- 
+        if (!garageExists)
+            return null;
+
+        return await _context.Gates
+            .Where(g => g.GarageId == garageId)
+            .ToListAsync(cancellationToken);
+    }
 }

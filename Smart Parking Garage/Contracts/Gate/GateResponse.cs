@@ -5,5 +5,6 @@ public record GateResponse
     int GateId,
     string GateType ,
     string DeviceId,
-    string Status
+    string Status ,
+     int GarageId
     );

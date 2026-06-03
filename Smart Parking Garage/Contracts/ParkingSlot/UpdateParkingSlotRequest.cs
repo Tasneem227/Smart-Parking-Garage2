@@ -4,7 +4,8 @@ public record UpdateParkingSlotRequest
     (
     string SlotNumber,
     string SlotType,
-    int? SensorId
+    int? SensorId ,
+    int GarageId
     )
 {
 }

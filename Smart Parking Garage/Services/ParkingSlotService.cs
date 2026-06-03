@@ -34,6 +34,12 @@ public class ParkingSlotService (ApplicationDbContext context): IParkingSlotServ
 
     public async Task<ParkingSlot> CreateSlotAsync(ParkingSlot request, CancellationToken cancellationToken = default)
     {
+        var garageExists = await _context.Garages
+        .AnyAsync(g => g.GarageId == request.GarageId,
+                  cancellationToken);
+
+        if (!garageExists)
+            throw new Exception("Garage not found");
         _context.ParkingSlots.Add(request);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -77,7 +83,30 @@ public class ParkingSlotService (ApplicationDbContext context): IParkingSlotServ
         return true;
 
     }
- 
 
+    public async Task<IEnumerable<ParkingSlot>?> GetSlotsByGarageIdAsync( int garageId,CancellationToken cancellationToken = default)
+    {
+        var garageExists = await _context.Garages.AnyAsync(g => g.GarageId == garageId, cancellationToken);
+
+        if (!garageExists)
+            return null;
+
+        return await _context.ParkingSlots
+            .Where(s => s.GarageId == garageId)
+            .ToListAsync(cancellationToken);
+    }
+
+
+    public async Task<IEnumerable<ParkingSlot>?> GetAvailableSlotsByGarageIdAsync(int garageId,CancellationToken cancellationToken = default)
+    {
+        var garageExists = await _context.Garages.AnyAsync(g => g.GarageId == garageId, cancellationToken);
+
+        if (!garageExists)
+            return null;
+
+        return await _context.ParkingSlots
+            .Where(s =>s.GarageId == garageId &&!s.IsOccupied)
+            .ToListAsync(cancellationToken);
+    }
 
 }
