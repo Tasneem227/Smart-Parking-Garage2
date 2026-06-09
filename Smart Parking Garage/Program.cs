@@ -20,17 +20,17 @@ var app = builder.Build();
 
 //app.UseSerilogRequestLogging();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
 
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-    var context = services.GetRequiredService<ApplicationDbContext>();
+//    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+//    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+//    var context = services.GetRequiredService<ApplicationDbContext>();
 
-    await DefaultUsersSeeding.SeedAsync(userManager, roleManager, context);
-    await DefaultUsersSeeding.SeedPermissionsAsync(roleManager);
-}
+//    await DefaultUsersSeeding.SeedAsync(userManager, roleManager, context);
+//    await DefaultUsersSeeding.SeedPermissionsAsync(roleManager);
+//}
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>

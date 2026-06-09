@@ -75,4 +75,11 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         var deleted = await _garageService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }
+    [HttpGet("GarageOwner-Garage-Gates")]
+    public async Task<IActionResult> GarageOwnerGaragesAndGates(string GarageOwnerId)
+    {
+        var result = await _garageService.GarageOwnerGaragesAndGates(GarageOwnerId);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
 }

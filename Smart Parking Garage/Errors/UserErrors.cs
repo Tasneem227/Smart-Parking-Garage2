@@ -36,6 +36,10 @@ public static class UserErrors
         new("Role.InvalidRoles", "Invalid roles", StatusCodes.Status400BadRequest);
     public static readonly Error DuplicatedUserName =
         new("User.DuplicatedUserName", "UserName already Exists", StatusCodes.Status400BadRequest);
-    
+    public static readonly Error NotGarageOwner =
+       new("User.NotGarageOwner", "the user is not a garage owner", StatusCodes.Status400BadRequest);
+    public static readonly Error NotCustomer =
+       new("User.NotCustomer", "the user is not a customer ", StatusCodes.Status400BadRequest);
+
 
 }

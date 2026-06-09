@@ -1,5 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Garage;
+using Smart_Parking_Garage.Errors;
+using System.Data;
 
 namespace Smart_Parking_Garage.Services;
 
@@ -7,10 +11,13 @@ public class GarageService:IGarageService
 {
 
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _UserManager;
 
-    public GarageService(ApplicationDbContext context)
+    public GarageService(ApplicationDbContext context
+                        , UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _UserManager = userManager;
     }
 
     public async Task<List<GarageLocation>> GetAllGarageLocationsAsync(CancellationToken cancellationToken)
@@ -130,5 +137,31 @@ public class GarageService:IGarageService
         await _context.SaveChangesAsync();
         return true;
     }
+    public async Task<Result<GarageOwnerGatesAndGaragesRequest>> GarageOwnerGaragesAndGates(
+     string garageOwnerId,CancellationToken cancellationToken)
+    {
+        var user = await _UserManager.FindByIdAsync(garageOwnerId.ToString());
 
+        if (user is null)
+            return Result.Failure<GarageOwnerGatesAndGaragesRequest>(
+                UserErrors.UserNotFound);
+
+        var isGarageOwner = await _UserManager.IsInRoleAsync(
+            user,
+            DefaultRoles.GarageOwner);
+
+        if (!isGarageOwner)
+            return Result.Failure<GarageOwnerGatesAndGaragesRequest>(
+                UserErrors.NotGarageOwner);
+
+        var garages = await _context.Garages
+            .Where(g => g.OwnerId == garageOwnerId)
+            .Select(g => new GarageOwnerGatesAndGaragesRequest(
+                g.GarageId,
+                g.Gates.Select(gt => gt.GateId)
+            ))
+            .SingleOrDefaultAsync(cancellationToken);
+
+        return Result.Success<GarageOwnerGatesAndGaragesRequest>(garages);
+    }
 }
