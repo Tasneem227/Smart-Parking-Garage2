@@ -34,5 +34,10 @@ public class ParkingSlotRequestValidator : AbstractValidator<ParkingSlotRequest>
             .GreaterThan(0)
             .When(x => x.SensorId.HasValue)
             .WithMessage("Sensor ID must be greater than 0.");
+
+        RuleFor(x => x.GarageId)
+           .NotEmpty()
+           .WithMessage("GarageId is required.");
     }
+
 }

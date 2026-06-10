@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260603195301_AddGarageRelations")]
+    partial class AddGarageRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -533,70 +536,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("Bookings");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.Device", b =>
-                {
-                    b.Property<string>("DeviceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("GarageId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("HasCamera")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasEntryGate")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasEnvSensors")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasExitGate")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("SlotsCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("TimeStamp")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("DeviceId");
-
-                    b.HasIndex("GarageId");
-
-                    b.ToTable("Devices");
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.EnvironmentReading", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool?>("Gas")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal?>("Humidity")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("Temperature")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceId");
-
-                    b.ToTable("EnvironmentReadings");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Garage", b =>
                 {
                     b.Property<int>("GarageId")
@@ -626,7 +565,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OwnerId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("TotalSlots")
@@ -887,37 +825,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("SensorsReadings");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.UploadedFile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("FileExtension")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("StoredFileName")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UploadedFiles");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Smart_Parking_Garage.Entities.ApplicationRole", null)
@@ -1031,35 +938,11 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Navigation("ParkingSlot");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.Device", b =>
-                {
-                    b.HasOne("Smart_Parking_Garage.Entities.Garage", "Garage")
-                        .WithMany("Devices")
-                        .HasForeignKey("GarageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Garage");
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.EnvironmentReading", b =>
-                {
-                    b.HasOne("Smart_Parking_Garage.Entities.Device", "Device")
-                        .WithMany()
-                        .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Device");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Garage", b =>
                 {
                     b.HasOne("Smart_Parking_Garage.Entities.ApplicationUser", "Owner")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OwnerId");
 
                     b.Navigation("Owner");
                 });
@@ -1162,10 +1045,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Garage", b =>
                 {
-                    b.Navigation("Devices");
-
-                    b.Navigation("Gates");
-
                     b.Navigation("Bookings");
 
                     b.Navigation("Gates");

@@ -91,4 +91,35 @@ public class ParkingSlotsController(IParkingSlotService parkingSlotService) : Co
 
         return NoContent();
     }
+
+    [HasPermission(Permissions.GetParkingSlots)]
+    [HttpGet("garage/{garageId}")]
+    public async Task<IActionResult> GetSlotsByGarageId(
+     int garageId,
+     CancellationToken cancellationToken)
+    {
+        var slots = await _parkingSlotService
+            .GetSlotsByGarageIdAsync(
+                garageId,
+                cancellationToken);
+
+        if (slots is null)
+            return NotFound("Garage not found");
+
+        var response = slots.Adapt<IEnumerable<ParkingSlotResponse>>();
+
+        return Ok(response);
+    }
+
+    [HasPermission(Permissions.GetParkingSlots)]
+    [HttpGet("garage/{garageId}/available")]
+    public async Task<IActionResult> GetAvailableSlotsByGarageId( int garageId,CancellationToken cancellationToken)
+    {
+        var slots = await _parkingSlotService.GetAvailableSlotsByGarageIdAsync(garageId,cancellationToken);
+        if (slots is null)
+            return NotFound("Garage not found");
+
+        var response = slots.Adapt<IEnumerable<ParkingSlotResponse>>();
+        return Ok(response);
+    }
 }

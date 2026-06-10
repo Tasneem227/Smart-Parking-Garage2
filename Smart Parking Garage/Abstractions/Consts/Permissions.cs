@@ -6,6 +6,7 @@ public class Permissions
 
     public const string GetBookings = "Bookings:read";
     public const string GetBookingById = "Bookings:readById";
+    public const string GetBookingByUserId = "Bookings:readByUserId";
     public const string AddBookings = "Bookings:add";
     public const string UpdateBookings = "Bookings:update";
     public const string DeleteBookingById = "Bookings:deleteById";

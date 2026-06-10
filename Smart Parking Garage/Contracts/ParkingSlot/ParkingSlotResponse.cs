@@ -6,7 +6,8 @@ public record ParkingSlotResponse(
     string SlotType,
     bool IsOccupied,
     DateTime LastUpdated,
-    int? SensorId
+    int? SensorId,
+    int GarageId
     )
 {
 

@@ -16,8 +16,13 @@ public class GateRequestValidator : AbstractValidator<GateRequest>
 
         RuleFor(x => x.Status)
             .NotEmpty().WithMessage("Status is required.")
-            .Must(s => new[] { "Open", "Closed", "Active", "Inactive", "Fault" , "open", "closed", "active", "inactive", "fault" }.Contains(s))
-            .WithMessage("Status must be one of: Open, Closed, Active, Inactive, Fault.");
+            .Must(s => new[] { "Open", "Closed", "open", "closed" }.Contains(s))
+            .WithMessage("Status must be Open or Closed");
+       
+        RuleFor(x => x.GarageId)
+           .NotEmpty()
+           .WithMessage("GarageId is required.");
+
     }
 }
 

@@ -20,6 +20,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Device> Devices { get; set; }
     public DbSet<EnvironmentReading> EnvironmentReadings { get; set; }
 
+   
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -31,6 +33,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
          .HasOne(p => p.Sensor)
          .WithOne(s => s.ParkingSlot)
          .HasForeignKey<Sensor>(s => s.ParkingSlotId);
+
+        modelBuilder.Entity<Gate>()
+        .HasOne(x => x.Garage)
+        .WithMany(x => x.Gates)
+        .HasForeignKey(x => x.GarageId);
 
 
     }

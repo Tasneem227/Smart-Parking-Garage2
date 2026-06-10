@@ -115,7 +115,24 @@ public class DefaultUsersSeeding
         
         var garageOwnerNewPermissions = new List<string>
         {
-            Permissions.GetGarageById
+            Permissions.GetGarageById,
+        };
+
+        var userNewPermissions = new List<string>
+        {
+            Permissions.GetGarageById,
+            Permissions.GetGarages,
+            Permissions.GetBookingById,
+            Permissions.GetBookingByUserId,
+            Permissions.GetBookings,
+            Permissions.GetGates,
+            Permissions.GetParkingSlots,
+            Permissions.GetGaragesStatus,
+            Permissions.GetParkingSlotsById,
+            Permissions.SendChatbotMessage,
+            Permissions.UpdateBookings,
+            Permissions.UpdateParkingSlots,
+            Permissions.DeleteBookingsByUserId,
         };
         var UserNewPermissions = new List<string>
         {

@@ -19,7 +19,7 @@ public class GatesController (IGateService gateService): ControllerBase
     {
         var allGates = await _gateService.GetAllGatesAsync(cancellationToken);
 
-        var response = allGates.Adapt<IEnumerable<GateRequest>>();
+        var response = allGates.Adapt<IEnumerable<GateResponse>>();
         return Ok(response);
     }
 
@@ -64,19 +64,28 @@ public class GatesController (IGateService gateService): ControllerBase
 
         return NoContent();
     }
-
-
-    /// //////////
- 
-
     [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateGateStatus([FromRoute] int id, [FromBody] string status,CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateGateStatus( [FromRoute] int id, CancellationToken cancellationToken)
     {
+        var isUpdated = await _gateService
+            .UpdateGateStatusAsync(id, cancellationToken);
 
-        var IsUpdated = await _gateService.UpdateGateStatusAsync(id,status ,cancellationToken);
-        if (!IsUpdated)
+        if (!isUpdated)
             return NotFound();
 
         return NoContent();
+    }
+
+    [HttpGet("garage/{garageId}")]
+    public async Task<IActionResult> GetGarageGates(int garageId,CancellationToken cancellationToken)
+    {
+        var gates = await _gateService.GetGatesByGarageIdAsync(garageId, cancellationToken);
+
+        if (gates is null)
+            return NotFound("Garage not found");
+
+        var response = gates.Adapt<IEnumerable<GateResponse>>();
+
+        return Ok(response);
     }
 }
