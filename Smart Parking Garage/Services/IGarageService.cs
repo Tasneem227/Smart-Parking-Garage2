@@ -12,4 +12,6 @@ public interface IGarageService
     Task<GarageSlotsStatus?> GetSlotsStatusByGarageIdAsync(int garageId, CancellationToken cancellationToken=default);
   
     Task<List<GarageLocation>> GetAllGarageLocationsAsync(CancellationToken cancellationToken);
+    Task<Result<GarageOwnerGatesAndGaragesRequest>> GarageOwnerGaragesAndGates(
+     string garageOwnerId, CancellationToken cancellationToken=default);
 }

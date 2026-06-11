@@ -38,7 +38,8 @@ public class BookingReminderService : BackgroundService
                     minutesLeft > 14)
                 {
                     await notificationService.SendAsync(
-                        booking.ApplicationUserId,
+                     
+                       booking.ApplicationUserId,
                         "Reminder ⏰",
                         $"Your booking for Slot {booking.ParkingSlot.SlotNumber} in Garage {booking.GarageId} will start after 15 minutes",
                         "Booking"

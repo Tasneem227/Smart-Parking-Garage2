@@ -1,0 +1,101 @@
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
+using Smart_Parking_Garage.Contracts.Garage;
+using Smart_Parking_Garage.Contracts.uploadedFile;
+using Smart_Parking_Garage.Errors;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Threading;
+
+namespace Smart_Parking_Garage.Services;
+
+public class AIModelsService(HttpClient httpClient 
+                            ,IWebHostEnvironment webHostEnvironment
+                            ,ApplicationDbContext context
+                            ,UserManager<ApplicationUser> userManager ) : IAIModelsService
+{
+    private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/Uploads/images";
+
+    private readonly HttpClient _HttpClient = httpClient;
+    private readonly ApplicationDbContext _context = context;
+    private readonly UserManager<ApplicationUser> _UserManager = userManager;
+
+    public async Task<Result<VehicleAiResponse>> ClassifyVehicleAsync(UploadedImageRequest uploadedImageRequest,
+                                                            string userid,CancellationToken cancellationToken)
+    {
+        var user = await _UserManager.FindByIdAsync(userid.ToString());
+
+        if (user is null)
+            return Result.Failure<VehicleAiResponse>(
+                UserErrors.UserNotFound);
+
+        var isCustomer = await _UserManager.IsInRoleAsync(
+            user,
+            DefaultRoles.Member);
+
+        if (!isCustomer)
+            return Result.Failure<VehicleAiResponse>(
+                UserErrors.NotCustomer);
+
+        if (uploadedImageRequest.Image == null || uploadedImageRequest.Image.Length == 0)
+            return Result.Failure<VehicleAiResponse>(UploadedFileErrors.EmptyImageFile);
+
+        using var formData = new MultipartFormDataContent();
+
+        await using var stream = uploadedImageRequest.Image.OpenReadStream();
+
+        var fileContent = new StreamContent(stream);
+        fileContent.Headers.ContentType =
+            new MediaTypeHeaderValue(uploadedImageRequest.Image.ContentType);
+
+        formData.Add(
+            fileContent,
+            "file",
+            uploadedImageRequest.Image.FileName);
+
+        var response = await _HttpClient.PostAsync(
+            "https://vehicle-classification-system-4eqj.vercel.app/api/classify",
+            formData);
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        var outer = JsonDocument.Parse(responseBody);
+        var innerJson = outer.RootElement
+            .GetProperty("value")
+            .GetString();
+        var result = JsonSerializer.Deserialize<VehicleAiResponse>(innerJson!);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception(
+                $"Vehicle AI Error ({(int)response.StatusCode}): {responseBody}");
+        }
+        var uploadedFile = await SaveFile(uploadedImageRequest.Image, cancellationToken);
+
+        await _context.AddAsync(uploadedFile, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(result);
+    }
+    private async Task<UploadedFile> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
+    {
+        var randomFileName = Path.GetRandomFileName();
+
+        var uploadedFile = new UploadedFile
+        {
+            FileName = file.FileName,
+            ContentType = file.ContentType,
+            StoredFileName = randomFileName,
+            FileExtension = Path.GetExtension(file.FileName)
+        };
+
+        var path = Path.Combine(_imagesPath, randomFileName);
+
+        using var stream = File.Create(path);
+        await file.CopyToAsync(stream, cancellationToken);
+
+        return uploadedFile;
+    }
+}

@@ -11,11 +11,11 @@ namespace Smart_Parking_Garage.Controllers;
 [ApiController]
 [Route("api/chatbot")]
 [Authorize]
-public class ChatbotController : ControllerBase
+public class ChatBotController : ControllerBase
 {
     private readonly AiChatService _aiChatService;
 
-    public ChatbotController(AiChatService aiChatService)
+    public ChatBotController(AiChatService aiChatService)
     {
         _aiChatService = aiChatService;
     }

@@ -21,11 +21,13 @@ public class Garage
     public bool IsActive { get; set; }
 
     [ForeignKey("ApplicationUserId")]
-    public string? OwnerId { get; set; }
+    public string OwnerId { get; set; }
 
     [ForeignKey(nameof(OwnerId))]
     public ApplicationUser ?Owner { get; set; }
     public ICollection<ParkingSlot>? ParkingSlots { get; set; }
-    public ICollection<Gate>? Gates { get; set; }
+    
     public ICollection<Booking>? Bookings { get; set; }
+    public ICollection<Gate>? Gates { get; set; }
+    public ICollection<Device>? Devices { get; set; }
 }

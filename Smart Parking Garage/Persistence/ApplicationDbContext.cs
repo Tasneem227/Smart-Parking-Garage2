@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Smart_Parking_Garage.Entities;
 using System.Reflection;
 
 namespace Smart_Parking_Garage.Persistence;
@@ -14,8 +15,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Sensor> Sensors { get; set; }
     public DbSet<Garage> Garages { get; set; }
-
     public DbSet<SensorReading> SensorsReadings { get; set; }
+    public DbSet<UploadedFile> UploadedFiles { get; set; }
+    public DbSet<Device> Devices { get; set; }
+    public DbSet<EnvironmentReading> EnvironmentReadings { get; set; }
 
    
 

@@ -9,7 +9,13 @@ public class AiChatService
     private readonly HttpClient _httpClient;
     private readonly ILogger<AiChatService> _logger;
 
+<<<<<<< HEAD
     public AiChatService(HttpClient httpClient,ILogger<AiChatService> logger)
+=======
+    public AiChatService(
+        HttpClient httpClient,
+        ILogger<AiChatService> logger)
+>>>>>>> 722a2fd4aa79b754d847a836ab97feb871f4c416
     {
         _httpClient = httpClient;
         _logger = logger;
@@ -71,4 +77,11 @@ public class AiChatService
 
         return aiResponse?.Response;
     }
+<<<<<<< HEAD
 }
+=======
+}
+
+//
+//
+>>>>>>> 722a2fd4aa79b754d847a836ab97feb871f4c416

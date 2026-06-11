@@ -6,90 +6,90 @@ namespace Smart_Parking_Garage.Seeding;
 public class DefaultUsersSeeding
 {
 
-    public static async Task SeedAsync(
-        UserManager<ApplicationUser> userManager,
-        RoleManager<ApplicationRole> roleManager,
-        ApplicationDbContext context)
-    {
-        // =====================
-        // 1. Admin
-        // =====================
-        var admin = await userManager.FindByEmailAsync(DefaultUsers.AdminEmail);
+    //public static async Task SeedAsync(
+    //    UserManager<ApplicationUser> userManager,
+    //    RoleManager<ApplicationRole> roleManager,
+    //    ApplicationDbContext context)
+    //{
+    //    // =====================
+    //    // 1. Admin
+    //    // =====================
+    //    var admin = await userManager.FindByEmailAsync(DefaultUsers.AdminEmail);
 
-        if (admin == null)
-        {
-            admin = new ApplicationUser
-            {
-                UserName = "admin@123",
-                Email = DefaultUsers.AdminEmail,
-                EmailConfirmed = true,
-                FirstName = "Smart Parking",
-                LastName = "Admin"
-            };
+    //    if (admin == null)
+    //    {
+    //        admin = new ApplicationUser
+    //        {
+    //            UserName = "admin@123",
+    //            Email = DefaultUsers.AdminEmail,
+    //            EmailConfirmed = true,
+    //            FirstName = "Smart Parking",
+    //            LastName = "Admin"
+    //        };
 
-            await userManager.CreateAsync(admin, DefaultUsers.AdminPassword);
-            await userManager.AddToRoleAsync(admin, DefaultRoles.Admin);
-        }
+    //        await userManager.CreateAsync(admin, DefaultUsers.AdminPassword);
+    //        await userManager.AddToRoleAsync(admin, DefaultRoles.Admin);
+    //    }
 
-        // =====================
-        // 2. Garage Owners
-        // =====================
-        var ownersData = new[]
-        {
-            new { Email = DefaultUsers.Owner1Email, Name =DefaultUsers.Owner1Name,UserName=DefaultUsers.Owner1UserName,Password=DefaultUsers.Owner1Password },
-            new { Email = DefaultUsers.Owner2Email, Name =DefaultUsers.Owner2Name,UserName=DefaultUsers.Owner2UserName,Password=DefaultUsers.Owner2Password  },
-            new { Email = DefaultUsers.Owner3Email, Name =DefaultUsers.Owner3Name,UserName=DefaultUsers.Owner3UserName,Password=DefaultUsers.Owner3Password  }
-        };
+    //    // =====================
+    //    // 2. Garage Owners
+    //    // =====================
+    //    var ownersData = new[]
+    //    {
+    //        new { Email = DefaultUsers.Owner1Email, Name =DefaultUsers.Owner1Name,UserName=DefaultUsers.Owner1UserName,Password=DefaultUsers.Owner1Password },
+    //        new { Email = DefaultUsers.Owner2Email, Name =DefaultUsers.Owner2Name,UserName=DefaultUsers.Owner2UserName,Password=DefaultUsers.Owner2Password  },
+    //        new { Email = DefaultUsers.Owner3Email, Name =DefaultUsers.Owner3Name,UserName=DefaultUsers.Owner3UserName,Password=DefaultUsers.Owner3Password  }
+    //    };
 
-        foreach (var item in ownersData)
-        {
-            var owner = await userManager.FindByEmailAsync(item.Email);
+    //    foreach (var item in ownersData)
+    //    {
+    //        var owner = await userManager.FindByEmailAsync(item.Email);
 
-            if (owner == null)
-            {
-                owner = new ApplicationUser
-                {
-                    UserName = item.UserName,
-                    Email = item.Email,
-                    EmailConfirmed = true,
-                    FirstName = item.Name,
-                    LastName = ""
-                };
+    //        if (owner == null)
+    //        {
+    //            owner = new ApplicationUser
+    //            {
+    //                UserName = item.UserName,
+    //                Email = item.Email,
+    //                EmailConfirmed = true,
+    //                FirstName = item.Name,
+    //                LastName = ""
+    //            };
 
-                await userManager.CreateAsync(owner, item.Password);
-                await userManager.AddToRoleAsync(owner, DefaultRoles.GarageOwner);
-            }
+    //            await userManager.CreateAsync(owner, item.Password);
+    //            await userManager.AddToRoleAsync(owner, DefaultRoles.GarageOwner);
+    //        }
 
-        }
+    //    }
 
-        // =====================
-        // . Garage Owner Permissions
-        // =====================
+    //    // =====================
+    //    // . Garage Owner Permissions
+    //    // =====================
 
-            var role = await roleManager.FindByNameAsync(DefaultRoles.GarageOwner);
+    //        var role = await roleManager.FindByNameAsync(DefaultRoles.GarageOwner);
 
-        if (role == null)
-            return;
+    //    if (role == null)
+    //        return;
 
-        var permissions = new List<string>
-        {
-            Permissions.GetGaragesStatus,
-            Permissions.UpdateGarages,
-            Permissions.GetParkingSlotsById,
-        };
+    //    var permissions = new List<string>
+    //    {
+    //        Permissions.GetGaragesStatus,
+    //        Permissions.UpdateGarages,
+    //        Permissions.GetParkingSlotsById,
+    //    };
 
-        foreach (var permission in permissions)
-        {
-            var exists = await roleManager.GetClaimsAsync(role);
+    //    foreach (var permission in permissions)
+    //    {
+    //        var exists = await roleManager.GetClaimsAsync(role);
 
-            if (!exists.Any(c => c.Type == Permissions.Type && c.Value == permission))
-            {
-                await roleManager.AddClaimAsync(role,
-                    new System.Security.Claims.Claim(Permissions.Type, permission));
-            }
-        }
+    //        if (!exists.Any(c => c.Type == Permissions.Type && c.Value == permission))
+    //        {
+    //            await roleManager.AddClaimAsync(role,
+    //                new System.Security.Claims.Claim(Permissions.Type, permission));
+    //        }
+    //    }
 
-    }
+    //}
 
 
 
@@ -134,10 +134,25 @@ public class DefaultUsersSeeding
             Permissions.UpdateParkingSlots,
             Permissions.DeleteBookingsByUserId,
         };
-
+        var UserNewPermissions = new List<string>
+        {
+            Permissions.GetGarageById,
+            Permissions.GetGarages,
+            Permissions.GetGates,
+            Permissions.GetBookingById,
+            Permissions.GetGaragesStatus,
+            Permissions.GetParkingSlots,
+            Permissions.GetParkingSlotsById,
+            Permissions.SendChatbotMessage,
+            Permissions.UpdateParkingSlots,
+            Permissions.DeleteBookingsByUserId,
+            Permissions.UpdateBookings,
+            
+            
+        };
         await AddPermissions(roleManager, adminRole, allPermissions);
         await AddPermissions(roleManager, ownerRole, garageOwnerNewPermissions);
-        await AddPermissions(roleManager, userRole, userNewPermissions);
+        await AddPermissions(roleManager, userRole, UserNewPermissions);
     }
     private static async Task AddPermissions(
      RoleManager<ApplicationRole> roleManager,
