@@ -13,9 +13,6 @@ using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Smart_Parking_Garage.Authentication;
 using Smart_Parking_Garage.Authentication.Filters;
-using Smart_Parking_Garage.Entities;
-using Smart_Parking_Garage.Persistence;
-using Smart_Parking_Garage.Services;
 using Smart_Parking_Garage.Settings;
 using System.Reflection;
 
@@ -46,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddHostedService<BookingReminderService>();
         services.AddHostedService<GarageMonitorService>();
+       services.AddHttpClient<IDeviceService, DeviceService>();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 

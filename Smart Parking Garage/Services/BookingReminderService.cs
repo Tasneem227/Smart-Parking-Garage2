@@ -31,18 +31,19 @@ public class BookingReminderService : BackgroundService
 
             foreach (var booking in bookings)
             {
+                var minutesLeft = (booking.BookingStart - now).TotalMinutes;
 
                 if (booking.BookingStart > now &&
-                    booking.BookingStart.Subtract(now).TotalMinutes <= 15)
+                    minutesLeft <= 15 &&
+                    minutesLeft > 14)
                 {
                     await notificationService.SendAsync(
                         booking.ApplicationUserId,
                         "Reminder ⏰",
-                        $"Your booking for Slot {booking.ParkingSlot.SlotNumber} in Garage {booking.GarageId} will start after {(int)Math.Ceiling((booking.BookingStart - now).TotalMinutes)} minutes",
+                        $"Your booking for Slot {booking.ParkingSlot.SlotNumber} in Garage {booking.GarageId} will start after 15 minutes",
                         "Booking"
                     );
                 }
-
 
                 if (booking.BookingEnd < now)
                 {
