@@ -30,10 +30,10 @@ public class ParkingSlotRequestValidator : AbstractValidator<ParkingSlotRequest>
             .WithMessage("Last updated time cannot be in the future.");
 
        
-        RuleFor(x => x.SensorId)
-            .GreaterThan(0)
-            .When(x => x.SensorId.HasValue)
-            .WithMessage("Sensor ID must be greater than 0.");
+        //RuleFor(x => x.SensorId)
+        //    .GreaterThan(0)
+        //    .When(x => x.SensorId.HasValue)
+        //    .WithMessage("Sensor ID must be greater than 0.");
 
         RuleFor(x => x.GarageId)
            .NotEmpty()

@@ -9,10 +9,15 @@ public class SlotStatusUpdateRequestValidator:AbstractValidator<SlotStatusUpdate
              .ExclusiveBetween(0,9)
              .WithMessage("SlotId must be between 1 and 8.");
 
-        RuleFor(x => x.IsOccupied)
-            .NotNull();
+        RuleFor(x => x.Status)
+            .NotEmpty()
+            .Must(status =>
+                status.Equals("occupied", StringComparison.OrdinalIgnoreCase) ||
+                status.Equals("free", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Status must be either 'occupied' or 'free'.");
 
         RuleFor(x => x.Timestamp)
-            .NotEmpty();
+            .NotEmpty()
+            .WithMessage("Timestamp is required.");
     }
 }

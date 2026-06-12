@@ -5,7 +5,6 @@ public record ParkingSlotRequest(
     string SlotType,
     bool IsOccupied,
     DateTime LastUpdated,
-    int? SensorId,
     int GarageId
     )
 {

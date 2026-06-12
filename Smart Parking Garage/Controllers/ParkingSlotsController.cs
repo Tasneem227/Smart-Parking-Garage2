@@ -70,7 +70,7 @@ public class ParkingSlotsController(IParkingSlotService parkingSlotService) : Co
         return NoContent();
     }
 
-    [HasPermission(Permissions.UpdateParkingSlots)]
+    [HasPermission(Permissions.GetParkingSlots)]
     [HttpGet("available")]
     public async Task<IActionResult> GetAvailableSlots(CancellationToken cancellationToken)
     {

@@ -9,13 +9,18 @@ public class RegisterDeviceRequestValidator : AbstractValidator<RegisterDeviceRe
             .MaximumLength(100);
 
         RuleFor(x => x.GarageId)
-            .GreaterThan(0);
+            .NotEmpty()
+            .Must(id => int.TryParse(id, out var value) && value > 0)
+            .WithMessage("GarageId must be a number greater than 0.");
 
         RuleFor(x => x.SlotsCount)
-            .GreaterThanOrEqualTo(0);
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("Slots Count Should Not Be Less Than 1");
 
-        RuleFor(x => x.TimeStamp)
-            .NotEmpty();
+
+        RuleFor(x => x.timestamp)
+            .NotEmpty()
+            .WithMessage("Timestamp is required.");
         RuleFor(x => x)
     .Must(x =>
         x.HasCamera ||

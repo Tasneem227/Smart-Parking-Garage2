@@ -108,7 +108,7 @@ public class DefaultUsersSeeding
             throw new Exception("Owner role not found");
 
         if (userRole == null)
-            throw new Exception("Owner role not found");
+            throw new Exception("Use role not found");
 
         var allPermissions = Permissions.GetAllPermissions();
 
@@ -116,9 +116,12 @@ public class DefaultUsersSeeding
         var garageOwnerNewPermissions = new List<string>
         {
             Permissions.GetGarageById,
+            Permissions.GetBookingById,
+            Permissions.GetBookings,
+            Permissions.GetBookingByUserId
         };
 
-        var userNewPermissions = new List<string>
+        var UserNewPermissions = new List<string>
         {
             Permissions.GetGarageById,
             Permissions.GetGarages,
@@ -132,24 +135,10 @@ public class DefaultUsersSeeding
             Permissions.SendChatbotMessage,
             Permissions.UpdateBookings,
             Permissions.UpdateParkingSlots,
-            Permissions.DeleteBookingsByUserId,
-        };
-        var UserNewPermissions = new List<string>
-        {
-            Permissions.GetGarageById,
-            Permissions.GetGarages,
-            Permissions.GetGates,
-            Permissions.GetBookingById,
-            Permissions.GetGaragesStatus,
-            Permissions.GetParkingSlots,
-            Permissions.GetParkingSlotsById,
-            Permissions.SendChatbotMessage,
-            Permissions.UpdateParkingSlots,
-            Permissions.DeleteBookingsByUserId,
-            Permissions.UpdateBookings,
-            
+            Permissions.AddBookings
             
         };
+       
         await AddPermissions(roleManager, adminRole, allPermissions);
         await AddPermissions(roleManager, ownerRole, garageOwnerNewPermissions);
         await AddPermissions(roleManager, userRole, UserNewPermissions);

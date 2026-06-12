@@ -28,7 +28,7 @@ using (var scope = app.Services.CreateScope())
     var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
     var context = services.GetRequiredService<ApplicationDbContext>();
 
-    await DefaultUsersSeeding.SeedAsync(userManager, roleManager, context);
+    //await DefaultUsersSeeding.SeedAsync(userManager, roleManager, context);
     await DefaultUsersSeeding.SeedPermissionsAsync(roleManager);
 }
 
@@ -41,10 +41,12 @@ app.UseSwaggerUI(c =>
 
 
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
 app.UseAuthentication(); 
 app.UseAuthorization(); 
 
 app.MapControllers();
+
+app.MapStaticAssets();
 
 app.Run();

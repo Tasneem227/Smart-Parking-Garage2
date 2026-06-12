@@ -4,7 +4,7 @@ public sealed class RegisterDeviceRequest
 {
     public string DeviceId { get; set; } = "raspberry-01";
 
-    public int GarageId { get; set; } = 1;
+    public string GarageId { get; set; } = "1";
 
     public int SlotsCount { get; set; }
 
@@ -16,5 +16,5 @@ public sealed class RegisterDeviceRequest
 
     public bool HasExitGate { get; set; }
 
-    public DateTimeOffset TimeStamp { get; set; } 
+    public DateTimeOffset timestamp { get; set; } 
 }

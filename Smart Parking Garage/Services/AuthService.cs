@@ -58,9 +58,28 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             });
 
             await _UserManager.UpdateAsync(user);
-
-            var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpiration);
-
+            var response = new AuthResponse
+            {
+                Id = user.Id,
+                Email= user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Token =token,
+                ExpiresIn= expiresIn,
+                RefreshToken= refreshToken,
+                RefreshTokenExpiration= refreshTokenExpiration
+            };
+           
+            if (userRoles.Contains("GarageOwner"))
+            {
+                var garage =await _Context.Garages.FirstOrDefaultAsync(x => x.OwnerId == user.Id,cancellationToken);
+                if (garage is null)
+                {
+                    return Result.Failure<AuthResponse>(GarageErrors.GarageNotFound);
+                }
+                response.garageId = garage?.GarageId;
+            }
+            
             return Result.Success(response);
         }
 
@@ -111,7 +130,27 @@ public class AuthService(UserManager<ApplicationUser> userManager,
 
         await _UserManager.UpdateAsync(user);
 
-        var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
+        var response = new AuthResponse
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Token = token,
+            ExpiresIn = expiresIn,
+            RefreshToken = refreshToken,
+            RefreshTokenExpiration = refreshTokenExpiration
+        };
+
+        if (userRoles.Contains("GarageOwner"))
+        {
+            var garage = await _Context.Garages.FirstOrDefaultAsync(x => x.OwnerId == user.Id, cancellationToken);
+            if (garage is null)
+            {
+                return Result.Failure<AuthResponse>(GarageErrors.GarageNotFound);
+            }
+            response.garageId = garage?.GarageId;
+        }
 
         return Result.Success(response);
     }

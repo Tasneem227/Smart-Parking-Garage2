@@ -8,15 +8,18 @@ public sealed class GateStatusUpdateRequestValidator
      
         RuleFor(x => x.Gate)
      .Must(x =>
-         string.Equals(x, "entry", StringComparison.OrdinalIgnoreCase) ||
-         string.Equals(x, "exit", StringComparison.OrdinalIgnoreCase));
+         string.Equals(x, "entrygate", StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(x, "exitgate", StringComparison.OrdinalIgnoreCase))
+           .WithMessage("Gate must be either 'EntryGate' or 'ExitGate'.");
 
         RuleFor(x => x.Status)
             .Must(x =>
                 string.Equals(x, "open", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(x, "closed", StringComparison.OrdinalIgnoreCase));
+                string.Equals(x, "closed", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Status must be either 'open' or 'closed'.");
 
         RuleFor(x => x.Timestamp)
-            .NotEmpty();
+            .NotEmpty()
+             .WithMessage("Timestamp is required.");
     }
 }

@@ -20,15 +20,15 @@ public class AiChatService
     public async Task<string?> SendAsync(
         string userId,
         string message,
-        double latitude,
-        double longitude)
+        float latitude,
+        float longitude)
     {
         var request = new AiChatRequest
         {
             UserId = userId,
             Message = message,
-            Latitude = latitude,
-            Longitude = longitude
+            latitude = latitude,
+            longitude = longitude
         };
 
         var json = JsonSerializer.Serialize(request);

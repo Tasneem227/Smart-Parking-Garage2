@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Garage;
 using Smart_Parking_Garage.Contracts.uploadedFile;
@@ -79,16 +80,17 @@ public class AIModelsService(HttpClient httpClient
 
         return Result.Success(result);
     }
-    private async Task<UploadedFile> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
+    private async Task<UploadedImage> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
     {
         var randomFileName = Path.GetRandomFileName();
 
-        var uploadedFile = new UploadedFile
+        var uploadedFile = new UploadedImage
         {
-            FileName = file.FileName,
+            ImageName = file.FileName,
             ContentType = file.ContentType,
-            StoredFileName = randomFileName,
-            FileExtension = Path.GetExtension(file.FileName)
+            StoredImageName = randomFileName,
+            ImageExtension = Path.GetExtension(file.FileName),
+            ImageType=ImageTypes.VehicleClassification
         };
 
         var path = Path.Combine(_imagesPath, randomFileName);

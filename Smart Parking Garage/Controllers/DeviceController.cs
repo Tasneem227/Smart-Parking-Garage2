@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Parking_Garage.Abstractions;
 using Smart_Parking_Garage.Contracts.Device;
+using Smart_Parking_Garage.Contracts.uploadedFile;
 
 namespace Smart_Parking_Garage.Controllers;
 [Route("api/[controller]")]
@@ -38,6 +40,22 @@ public class DeviceController(IDeviceService deviceService) : ControllerBase
         var result = await _DeviceService.EnvironmentUpdateAsync(environmentUpdateRequest, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
 
+    }
+
+    [HttpPost("camera/upload")]
+    public async Task<IActionResult> Upload(FullGarageUploadImageRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _DeviceService.UploadAsync(request, cancellationToken);
+
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
+    [HttpPost("alerts")]
+    public async Task<IActionResult> GasAlert(GasAlertRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _DeviceService.GasAlertAsync(request, cancellationToken);
+
+        return result.IsSuccess ? Ok("Alert Sent Successfully") : result.ToProblem();
     }
 
 }

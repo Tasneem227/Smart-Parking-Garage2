@@ -6,11 +6,13 @@ public class EnvironmentUpdateValidator:AbstractValidator<EnvironmentUpdateReque
     {
 
         RuleFor(x => x.Temperature)
-            .InclusiveBetween(-50, 100)
-            .When(x => x.Temperature.HasValue);
+             .InclusiveBetween(-50, 100)
+             .When(x => x.Temperature.HasValue)
+             .WithMessage("Temperature must be between -50°C and 100°C.");
 
         RuleFor(x => x.Humidity)
             .InclusiveBetween(0, 100)
-            .When(x => x.Humidity.HasValue);
+            .When(x => x.Humidity.HasValue)
+            .WithMessage("Humidity must be between 0% and 100%.");
     }
 }

@@ -11,8 +11,8 @@ public class AiChatRequest
     public string Message { get; set; } = string.Empty;
 
     [JsonPropertyName("latitude")]
-    public double Latitude { get; set; }
+    public float latitude { get; set; }
 
     [JsonPropertyName("longitude")]
-    public double Longitude { get; set; }
+    public float longitude { get; set; }
 }
