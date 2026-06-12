@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611222743_UpdateDeviceCommandStructure2")]
+    partial class UpdateDeviceCommandStructure2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -397,30 +400,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.AlertLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AlertLogs");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.ApplicationRole", b =>
@@ -963,7 +942,7 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("SensorsReadings");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.UploadedImage", b =>
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.UploadedFile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -974,29 +953,24 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ImageExtension")
+                    b.Property<string>("FileExtension")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("ImageName")
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("ImageType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("StoredImageName")
+                    b.Property<string>("StoredFileName")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("UploadedImages");
+                    b.ToTable("UploadedFiles");
                 });
 
             modelBuilder.Entity("DeviceCommand", b =>

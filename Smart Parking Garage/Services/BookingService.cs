@@ -243,4 +243,31 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
             "Booking"
         );
     }
+
+    public async Task<Booking?> GetCurrentBookingForGateAsync(string userId,CancellationToken cancellationToken = default)
+    {
+        return await _Context.Bookings
+       .Where(b =>b.ApplicationUserId == userId
+           && b.Status != "Cancelled"
+           && b.Status != "Completed"
+           && b.Status != "Expired")
+       .OrderBy(b => b.BookingStart)
+       .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<Booking?> GetCurrentBookingForExitGateAsync(string userId,CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+
+        return await _Context.Bookings
+            .Where(b => b.ApplicationUserId == userId
+                && b.Status != "Completed"
+                && b.Status != "Cancelled"
+                && b.Status != "Expired"
+                && b.BookingStart <= now
+                && b.BookingEnd.HasValue
+                && b.BookingEnd >= now)
+            .OrderByDescending(b => b.BookingStart)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

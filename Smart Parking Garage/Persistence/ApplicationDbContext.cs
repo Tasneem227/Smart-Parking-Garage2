@@ -19,9 +19,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UploadedImage> UploadedImages { get; set; }
     public DbSet<Device> Devices { get; set; }
     public DbSet<EnvironmentReading> EnvironmentReadings { get; set; }
+    public DbSet<DeviceCommand> DeviceCommands { get; set; }
     public DbSet<AlertLog> AlertLogs { get; set; }
 
-   
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +40,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         .WithMany(x => x.Gates)
         .HasForeignKey(x => x.GarageId);
 
-
+        modelBuilder.Entity<DeviceCommand>()
+       .HasIndex(x => x.CommandId)
+       .IsUnique();
     }
 }

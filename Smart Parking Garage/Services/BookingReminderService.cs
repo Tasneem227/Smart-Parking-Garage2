@@ -41,11 +41,10 @@ public class BookingReminderService : BackgroundService
                      
                        booking.ApplicationUserId,
                         "Reminder ⏰",
-                        $"Your booking for Slot {booking.ParkingSlot.SlotNumber} in Garage {booking.GarageId} will start after {(int)Math.Ceiling((booking.BookingStart - now).TotalMinutes)} minutes",
+                        $"Your booking for Slot {booking.ParkingSlot.SlotNumber} in Garage {booking.GarageId} will start after 15 minutes",
                         "Booking"
                     );
                 }
-
 
                 if (booking.BookingEnd < now)
                 {

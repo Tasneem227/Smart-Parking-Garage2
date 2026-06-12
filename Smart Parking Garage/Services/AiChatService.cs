@@ -9,9 +9,7 @@ public class AiChatService
     private readonly HttpClient _httpClient;
     private readonly ILogger<AiChatService> _logger;
 
-    public AiChatService(
-        HttpClient httpClient,
-        ILogger<AiChatService> logger)
+    public AiChatService(HttpClient httpClient,ILogger<AiChatService> logger)
     {
         _httpClient = httpClient;
         _logger = logger;
@@ -74,6 +72,3 @@ public class AiChatService
         return aiResponse?.Response;
     }
 }
-
-//
-//

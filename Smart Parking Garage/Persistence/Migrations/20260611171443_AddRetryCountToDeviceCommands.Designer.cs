@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611171443_AddRetryCountToDeviceCommands")]
+    partial class AddRetryCountToDeviceCommands
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,51 +24,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DeviceCommand", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CommandId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CommandType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DeviceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Error")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastSentAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("TimeStamp")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommandId")
-                        .IsUnique();
-
-                    b.HasIndex("DeviceId");
-
-                    b.ToTable("DeviceCommands");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
@@ -399,30 +357,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.AlertLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("DeviceId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AlertLogs");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.ApplicationRole", b =>
                 {
                     b.Property<string>("Id")
@@ -640,6 +574,45 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.HasIndex("GarageId");
 
                     b.ToTable("Devices");
+                });
+
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.DeviceCommand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CommandId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CommandType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("TimeStamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.ToTable("DeviceCommands");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.EnvironmentReading", b =>
@@ -963,7 +936,7 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("SensorsReadings");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.UploadedImage", b =>
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.UploadedFile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -974,38 +947,24 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("ImageExtension")
+                    b.Property<string>("FileExtension")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("ImageName")
+                    b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("ImageType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("StoredImageName")
+                    b.Property<string>("StoredFileName")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("UploadedImages");
-                });
-
-            modelBuilder.Entity("DeviceCommand", b =>
-                {
-                    b.HasOne("Smart_Parking_Garage.Entities.Device", "Device")
-                        .WithMany("DeviceCommands")
-                        .HasForeignKey("DeviceId");
-
-                    b.Navigation("Device");
+                    b.ToTable("UploadedFiles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1130,6 +1089,15 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired();
 
                     b.Navigation("Garage");
+                });
+
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.DeviceCommand", b =>
+                {
+                    b.HasOne("Smart_Parking_Garage.Entities.Device", "Device")
+                        .WithMany("DeviceCommands")
+                        .HasForeignKey("DeviceId");
+
+                    b.Navigation("Device");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.EnvironmentReading", b =>
