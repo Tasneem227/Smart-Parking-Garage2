@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <Folder Include="Contracts\AIModels\" />
+    <Folder Include="Contracts\Alert\" />
     <Folder Include="wwwroot\Uploads\Images\" />
   </ItemGroup>
 

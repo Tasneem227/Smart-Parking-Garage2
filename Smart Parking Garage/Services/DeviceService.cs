@@ -1,11 +1,16 @@
-﻿using Smart_Parking_Garage.Contracts.Device;
+﻿using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Constants;
+using Smart_Parking_Garage.Contracts.Device;
+using Smart_Parking_Garage.Contracts.IOT;
 using Smart_Parking_Garage.Errors;
 
 namespace Smart_Parking_Garage.Services;
 
-public class DeviceService(ApplicationDbContext context) :IDeviceService
+public class DeviceService(ApplicationDbContext context, HttpClient httpClient) :IDeviceService
 {
+
     private readonly ApplicationDbContext _Context = context;
+    private readonly HttpClient _httpClient = httpClient;
 
     public async Task<Result<RegisterDeviceResponse>> RegisterDeviceAsync(RegisterDeviceRequest request, CancellationToken cancellationToken)
     {
@@ -80,6 +85,105 @@ public class DeviceService(ApplicationDbContext context) :IDeviceService
         return Result.Success(new DeviceResponse("Gate Status Updated Successfully"));
     }
 
+    public async Task SendCommandAsync(DeviceCommandRequest request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync(
+            "https://smelting-remedial-unselect.ngrok-free.dev/device/commands",request , cancellationToken);
+
+        Console.WriteLine(response);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task ExecuteCommandAsync(DeviceCommandRequest request,CancellationToken cancellationToken = default)
+    {
+        var command = new DeviceCommand
+        {
+            CommandId = request.CommandId,
+            CommandType = request.Type,
+            Status = "pending",
+            RetryCount = 0,
+            LastSentAt = DateTimeOffset.UtcNow
+        };
+
+        _Context.DeviceCommands.Add(command);
+
+        await _Context.SaveChangesAsync(cancellationToken);
+
+        await SendCommandAsync(request, cancellationToken);
+    }
+
+    public async Task OpenEntryGateAsync(CancellationToken cancellationToken = default)
+    {
+        await ExecuteCommandAsync(
+            new DeviceCommandRequest
+            {
+                CommandId = GenerateCommandId(),
+                Type = DeviceCommands.OpenEntryGateType
+            },cancellationToken);
+    }
+
+    public async Task OpenExitGateAsync(CancellationToken cancellationToken = default)
+    {
+        await ExecuteCommandAsync(
+            new DeviceCommandRequest
+            {
+                CommandId = GenerateCommandId(),
+                Type = DeviceCommands.OpenExitGateType
+            },
+            cancellationToken);
+    }
+    public async Task CaptureImageAsync(CancellationToken cancellationToken = default)
+    {
+        await ExecuteCommandAsync(
+            new DeviceCommandRequest
+            {
+                CommandId = GenerateCommandId(),
+                Type = DeviceCommands.CaptureImage
+            },
+            cancellationToken);
+    }
+    public async Task ProcessCommandAckAsync( DeviceCommandAckRequest request,CancellationToken cancellationToken = default)
+    {
+        var command = await _Context.DeviceCommands.FirstOrDefaultAsync(c => c.CommandId == request.CommandId,cancellationToken);
+
+        if (command is null)
+            throw new Exception("Command not found.");
+
+        command.Status = request.Status.ToLower();
+
+        command.Error = request.Error;
+
+        command.DeviceId = request.DeviceId;
+
+        command.TimeStamp = request.TimeStamp;
+
+        await _Context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task RetryCommandAsync( DeviceCommand command,CancellationToken cancellationToken = default)
+    {
+        await SendCommandAsync(
+            new DeviceCommandRequest
+            {
+                CommandId = command.CommandId,
+                Type = command.CommandType
+            },cancellationToken);
+
+        command.RetryCount++;
+
+        command.Status = "pending";
+
+        command.LastSentAt = DateTimeOffset.UtcNow;
+
+        await _Context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string GenerateCommandId()
+    {
+        return Guid.NewGuid().ToString("N");
+    }
+
+  
 
 
 }

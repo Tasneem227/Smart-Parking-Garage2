@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611171443_AddRetryCountToDeviceCommands")]
+    partial class AddRetryCountToDeviceCommands
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,51 +24,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DeviceCommand", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CommandId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CommandType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DeviceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Error")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastSentAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("RetryCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("TimeStamp")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommandId")
-                        .IsUnique();
-
-                    b.HasIndex("DeviceId");
-
-                    b.ToTable("DeviceCommands");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
@@ -618,6 +576,45 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("Devices");
                 });
 
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.DeviceCommand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CommandId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CommandType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("TimeStamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.ToTable("DeviceCommands");
+                });
+
             modelBuilder.Entity("Smart_Parking_Garage.Entities.EnvironmentReading", b =>
                 {
                     b.Property<int>("Id")
@@ -970,15 +967,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("UploadedFiles");
                 });
 
-            modelBuilder.Entity("DeviceCommand", b =>
-                {
-                    b.HasOne("Smart_Parking_Garage.Entities.Device", "Device")
-                        .WithMany("DeviceCommands")
-                        .HasForeignKey("DeviceId");
-
-                    b.Navigation("Device");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Smart_Parking_Garage.Entities.ApplicationRole", null)
@@ -1101,6 +1089,15 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired();
 
                     b.Navigation("Garage");
+                });
+
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.DeviceCommand", b =>
+                {
+                    b.HasOne("Smart_Parking_Garage.Entities.Device", "Device")
+                        .WithMany("DeviceCommands")
+                        .HasForeignKey("DeviceId");
+
+                    b.Navigation("Device");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.EnvironmentReading", b =>

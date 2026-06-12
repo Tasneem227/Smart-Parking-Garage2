@@ -19,5 +19,8 @@ public class Device
 
         public DateTimeOffset TimeStamp { get; set; }=DateTimeOffset.UtcNow;
         public Garage? Garage { get; set; }
+
+        public ICollection<DeviceCommand> DeviceCommands { get; set; } = new List<DeviceCommand>();
+       
 }
 

@@ -43,7 +43,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddHostedService<BookingReminderService>();
         services.AddHostedService<GarageMonitorService>();
-       services.AddHttpClient<IDeviceService, DeviceService>();
+        services.AddHttpClient<IDeviceService, DeviceService>();
+        services.AddHostedService<CommandRetryService>();
 
         services.AddScoped<IAIModelsService, AIModelsService>();
         services.AddScoped<IDeviceService, DeviceService>();
