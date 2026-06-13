@@ -12,8 +12,8 @@ public class FullGarageUploadImageRequestValidator:AbstractValidator<FullGarageU
             .WithMessage("DeviceId is required.");
 
         RuleFor(x => x.CommandId)
-            .Equal(103)
-            .WithMessage("CommandId is not for uploading full garage image.");
+            .Equal("103")
+            .WithMessage("CommandId is Required.");
 
         RuleFor(x => x.ImageType)
             .NotEmpty()
