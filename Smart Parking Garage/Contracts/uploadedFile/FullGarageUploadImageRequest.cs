@@ -3,7 +3,7 @@
 public class FullGarageUploadImageRequest
 {
     public string DeviceId { get; set; }
-    public int CommandId { get; set; }
+    public string CommandId { get; set; }
     public string ImageType { get; set; }
     public IFormFile File {  get; set; }
        

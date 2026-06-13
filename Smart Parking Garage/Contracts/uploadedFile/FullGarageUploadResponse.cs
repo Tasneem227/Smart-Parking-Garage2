@@ -3,4 +3,5 @@
 namespace Smart_Parking_Garage.Contracts.uploadedFile;
 
 public record FullGarageUploadResponse
-(Guid imageId);
+(Guid imageId,
+    string commandId);

@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Smart_Parking_Garage.Constants;
-using Azure.Core;
+﻿using Azure.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Constants;
 using Smart_Parking_Garage.Contracts.Device;
 using Smart_Parking_Garage.Contracts.IOT;
 using Smart_Parking_Garage.Contracts.uploadedFile;
 using Smart_Parking_Garage.Entities;
 using Smart_Parking_Garage.Errors;
+using System;
 
 namespace Smart_Parking_Garage.Services;
 
@@ -112,7 +113,9 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         var response = await _httpClient.PostAsJsonAsync(
             "https://smelting-remedial-unselect.ngrok-free.dev/device/commands",request , cancellationToken);
 
+        
         Console.WriteLine(response);
+
         response.EnsureSuccessStatusCode();
     }
 
@@ -240,7 +243,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         await _Context.AddAsync(uploadedFile, cancellationToken);
         await _Context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new FullGarageUploadResponse( uploadedFile.Id) );
+        return Result.Success(new FullGarageUploadResponse( uploadedFile.Id,uploadImageRequest.CommandId) );
     }
 
 
