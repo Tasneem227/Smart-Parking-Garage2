@@ -4,11 +4,8 @@ using Smart_Parking_Garage.Constants;
 
 namespace Smart_Parking_Garage.Services;
 
-<<<<<<< HEAD
+
 public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<CommandRetryService> logger) : BackgroundService
-=======
-public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<CommandRetryService> logger  ) : BackgroundService
->>>>>>> aa9200ef2d84e766901b4ec568d8d6b93405ee74
 {
 
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
@@ -30,11 +27,9 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
         }
     }
 
-<<<<<<< HEAD
+
     private async Task HandleCommandsAsync(ApplicationDbContext context,IDeviceService deviceService,CancellationToken cancellationToken)
-=======
-    private  async Task HandleCommandsAsync(ApplicationDbContext context,IDeviceService deviceService,CancellationToken cancellationToken)
->>>>>>> aa9200ef2d84e766901b4ec568d8d6b93405ee74
+
     {
         var commands = await context.DeviceCommands.Where(x => x.Status != "done").ToListAsync(cancellationToken);
 
@@ -50,7 +45,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
                 {
                     try
                     {
-<<<<<<< HEAD
+
                         await deviceService.RetryCommandAsync(command,cancellationToken);
                     }
                     catch (Exception ex)
@@ -59,13 +54,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
                             ex,
                             "Failed to retry command {CommandId}",
                             command.CommandId);
-=======
-                        await deviceService.RetryCommandAsync(command, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to retry command {CommandId}", command.Id);
->>>>>>> aa9200ef2d84e766901b4ec568d8d6b93405ee74
+
                     }
                 }
 
@@ -84,19 +73,13 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
                 {
                     try
                     {
-<<<<<<< HEAD
+
                         await deviceService.RetryCommandAsync( command, cancellationToken);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError( ex,"Failed to retry command {CommandId}",command.CommandId);
-=======
-                        await deviceService.RetryCommandAsync(command, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to retry command {CommandId}", command.Id);
->>>>>>> aa9200ef2d84e766901b4ec568d8d6b93405ee74
+
                     }
                 }
             }
