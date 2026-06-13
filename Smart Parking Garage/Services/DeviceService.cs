@@ -164,9 +164,10 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
             },
             cancellationToken);
     }
+   
     public async Task ProcessCommandAckAsync( DeviceCommandAckRequest request,CancellationToken cancellationToken = default)
     {
-        var command = await _Context.DeviceCommands.FirstOrDefaultAsync(c => c.CommandId == request.CommandId,cancellationToken);
+        var command = await _Context.DeviceCommands.FirstOrDefaultAsync( c => c.CommandId == request.CommandId,cancellationToken);
 
         if (command is null)
             throw new Exception("Command not found.");

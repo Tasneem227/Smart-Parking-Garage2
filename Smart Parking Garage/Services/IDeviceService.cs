@@ -18,11 +18,6 @@ public interface IDeviceService
     Task OpenEntryGateAsync(CancellationToken cancellationToken = default);
     Task OpenExitGateAsync(CancellationToken cancellationToken = default);
     Task CaptureImageAsync(CancellationToken cancellationToken = default);
- 
-
-
-
-
     Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest uploadImageRequest, CancellationToken cancellationToken = default);
     Task<Result> GasAlertAsync(GasAlertRequest gasAlertRequest, CancellationToken cancellationToken = default);
 
