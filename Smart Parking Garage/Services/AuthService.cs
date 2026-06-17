@@ -4,14 +4,17 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Smart_Parking_Garage.Authentication;
 using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Authentication;
 using Smart_Parking_Garage.Entities;
 using Smart_Parking_Garage.Errors;
 using Smart_Parking_Garage.Helpers;
+using Smart_Parking_Garage.Settings;
 using System.Security.Cryptography;
 using System.Text;
+
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Error = Smart_Parking_Garage.Abstractions.Error;
 
@@ -23,8 +26,10 @@ public class AuthService(UserManager<ApplicationUser> userManager,
                         , ILogger<AuthService> logger,
                         IHttpContextAccessor httpContextAccessor
                         , IEmailSender emailSender
-                        ,ApplicationDbContext context) : IAuthService
+                        ,ApplicationDbContext context
+                       ) : IAuthService
 {
+
     private readonly UserManager<ApplicationUser> _UserManager = userManager;
     private readonly IJwtProvider _JwtProvider = jwtProvider;
     private readonly SignInManager<ApplicationUser> _SignInManager = signInManager;
@@ -33,6 +38,8 @@ public class AuthService(UserManager<ApplicationUser> userManager,
     private readonly IEmailSender _EmailSender = emailSender;
     private readonly ApplicationDbContext _Context = context;
     private readonly int _refreshTokenExpiryDays = 14;
+
+    
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
     {
@@ -197,7 +204,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             _Logger.LogInformation("Confirmation Code :{code}", code);
             await _UserManager.AddToRoleAsync(user, DefaultRoles.Member);
             //send email
-            SendConfirmationEmail(user, code);
+            await SendConfirmationEmail(user, code);
 
             return Result.Success();
         }
@@ -253,7 +260,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
         _Logger.LogInformation("Confirmation Code :{code}", code);
 
         //todo:send email
-        SendConfirmationEmail(user, code);
+        await SendConfirmationEmail(user, code);
         return Result.Success();
     }
 
@@ -266,11 +273,78 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             new Dictionary<string, string>
             {
                 { "{{name}}", user.FirstName },
-                    { "{{action_url}}", $"https://localhost:7133/auth/ConfirmEmail?userId={user.Id}&code={code}" }
+                    { "{{action_url}}", $"http://smartparkinggaragesystem.runasp.net/auth/ConfirmEmail?userId={user.Id}&code={code}" }
             }
         );
 
         await _EmailSender.SendEmailAsync(user.Email!, "✅ Smart Parking System : Email Confirmation", emailBody);
+    }
+
+
+
+
+    public async Task<Result> SendResetPasswordCodeAsync(string email)
+    {
+        if (await _UserManager.FindByEmailAsync(email) is not { } user)
+            return Result.Success();
+
+        if (!user.EmailConfirmed)
+            return Result.Failure(UserErrors.EmailNotConfirmed);
+
+        var code = await _UserManager.GeneratePasswordResetTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        _Logger.LogInformation("Reset code: {code}", code);
+
+        await SendResetPasswordEmail(user, code);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ResetPasswordAsync(resetPasswordRequest request)
+    {
+        var user = await _UserManager.FindByEmailAsync(request.Email);
+
+        if (user is null || !user.EmailConfirmed)
+            return Result.Failure(UserErrors.InvalidCode);
+
+        IdentityResult result;
+
+        try
+        {
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+            result = await _UserManager.ResetPasswordAsync(user, code, request.NewPassword);
+        }
+        catch (FormatException)
+        {
+            result = IdentityResult.Failed(_UserManager.ErrorDescriber.InvalidToken());
+        }
+
+        if (result.Succeeded)
+            return Result.Success();
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
+    }
+
+
+
+
+    private async Task SendResetPasswordEmail(ApplicationUser user, string code)
+    {
+        var origin = _HttpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+        var emailBody = EmailBodyBuilder.GenerateEmailBody("ForgetPassword",
+            TemplateModel: new Dictionary<string, string>
+            {
+                { "{{name}}", user.FirstName },
+                { "{{action_url}}", $"http://smartparkinggaragesystem.runasp.net/auth/forgetPassword?email={user.Email}&code={code}" }
+            }
+        );
+
+        await _EmailSender.SendEmailAsync(user.Email!, "✅ Smart Parking Garage: Change Password", emailBody);
+
     }
 
     private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRolesAndPermissions(ApplicationUser user, CancellationToken cancellationToken)

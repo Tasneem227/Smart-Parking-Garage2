@@ -2,6 +2,7 @@
 
 public static class ParkingSlotErrors
 {
+<<<<<<< HEAD
     public static readonly Error GarageNotFound =
        new("Garage.Garage Not Found.", "This garage not found so we cannot assign any parking slot to it", StatusCodes.Status404NotFound);
 
@@ -16,4 +17,14 @@ public static class ParkingSlotErrors
     public static readonly Error SlotsNotFound =
       new("ParkingSLot.ParkingSLot Not Found.", "this garage dosenot have any slots ", StatusCodes.Status404NotFound);
 
+=======
+    public static readonly Error SlotNotFound =
+        new("ParkingSLot.ParkingSLot Not Found.", "the ParkingSLot Is Not Found ", StatusCodes.Status404NotFound);
+
+    public static readonly Error NoEmptySlotForCarType =
+        new("ParkingSLot.ParkingSLot Not Found.", "there is no empty ParkingSLot for this carType ", StatusCodes.Status404NotFound);
+
+    public static readonly Error SlotIsOccupied =
+        new("ParkingSLot.ParkingSLot Is Occupied.", "the ParkingSLot Is Occupied", StatusCodes.Status404NotFound);
+>>>>>>> f8cc2ad81a0b1d12d7f2c77d1a320e0f9a9684ff
 }

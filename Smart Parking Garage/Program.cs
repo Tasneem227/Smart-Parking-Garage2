@@ -1,5 +1,6 @@
 using Smart_Parking_Garage;
 using Smart_Parking_Garage.Seeding;
+using Smart_Parking_Garage.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDependencies(builder.Configuration);
@@ -38,6 +39,8 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Smart Parking API V1");
     c.RoutePrefix = "swagger";
 });
+
+
 
 
 app.UseHttpsRedirection();

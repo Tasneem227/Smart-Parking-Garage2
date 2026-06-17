@@ -31,8 +31,11 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
     private async Task HandleCommandsAsync(ApplicationDbContext context, IDeviceService deviceService, CancellationToken cancellationToken)
 
     {
-        var commands = await context.DeviceCommands.Where(x => x.Status != "done").ToListAsync(cancellationToken);
+        var commands = await context.DeviceCommands.Where(x => x.Status != "done" &&
+                    x.TimeStamp >= DateTimeOffset.UtcNow.AddMinutes(-1)).ToListAsync(cancellationToken);
 
+        if (!commands.Any())
+            return;
         foreach (var command in commands)
         {
             var timeoutSeconds =

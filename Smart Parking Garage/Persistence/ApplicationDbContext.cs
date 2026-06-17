@@ -21,6 +21,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<EnvironmentReading> EnvironmentReadings { get; set; }
     public DbSet<DeviceCommand> DeviceCommands { get; set; }
     public DbSet<AlertLog> AlertLogs { get; set; }
+    public DbSet<CarType> CarTypes { get; set; }
+    public DbSet<PhoneVerificationCode>  phoneVerificationCodes { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

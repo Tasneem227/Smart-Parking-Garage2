@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260616163814_PhoneVerificationCode")]
+    partial class PhoneVerificationCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -584,12 +587,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
 
                     b.Property<int?>("GarageId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("LastEntryGateOpenedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastExitGateOpenedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("ParkingSlotId")
                         .HasColumnType("int");

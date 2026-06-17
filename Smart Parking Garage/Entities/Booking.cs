@@ -15,6 +15,8 @@ public class Booking
     public DateTime? LastEntryGateOpenedAt { get; set; }
     public DateTime? LastExitGateOpenedAt { get; set; }
 
+    public bool ReminderSent { get; set; } = false;
+
     // Navigation
     [ForeignKey("ApplicationUserId")]
     public string ApplicationUserId { get; set; }

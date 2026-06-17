@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using Smart_Parking_Garage.Contracts.Chatbot;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
-using Smart_Parking_Garage.Contracts.Chatbot;
 
 namespace Smart_Parking_Garage.Services;
 
@@ -15,48 +16,38 @@ public class AiChatService
         _logger = logger;
     }
 
-    public async Task<string?> SendAsync(
-        string userId,
-        string message,
-        float latitude,
-        float longitude)
+    public async Task<string?> SendAsync(ChatbotMessageRequest request,string token)
     {
-        var request = new AiChatRequest
-        {
-            UserId = userId,
-            Message = message,
-            latitude = latitude,
-            longitude = longitude
-        };
-
+       
         var json = JsonSerializer.Serialize(request);
 
-        _logger.LogInformation(
-            "Sending AI request: {Payload}",
-            json);
+                _logger.LogInformation(
+                    "Sending AI request: {Payload} {token}",
+                    json,token);
 
-        var content = new StringContent(
-            json,
-            Encoding.UTF8,
-            "application/json");
+        var content = new StringContent( json, Encoding.UTF8,  "application/json");
 
-        var response = await _httpClient.PostAsync(
-            "https://chatbot-two-gold-69.vercel.app/chat",
-            content);
+        var httpRequest = new HttpRequestMessage(
+         HttpMethod.Post,
+         "https://chatbot-two-gold-69.vercel.app/chat");
+        httpRequest.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+        httpRequest.Content = content;
 
+        var response = await _httpClient.SendAsync(httpRequest);
         var responseText = await response.Content.ReadAsStringAsync();
 
-        _logger.LogInformation(
-            "AI response status: {StatusCode}, Response: {Response}",
-            (int)response.StatusCode,
-            responseText);
+                _logger.LogInformation(
+                    "AI response status: {StatusCode}, Response: {Response}",
+                    (int)response.StatusCode,
+                    responseText);
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError(
-                "AI request failed. Status: {StatusCode}, Response: {Response}",
-                (int)response.StatusCode,
-                responseText);
+                _logger.LogError(
+                    "AI request failed. Status: {StatusCode}, Response: {Response}",
+                    (int)response.StatusCode,
+                    responseText);
 
             throw new Exception(
                 $"AI ERROR ({(int)response.StatusCode}): {responseText}");

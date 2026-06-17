@@ -2,7 +2,7 @@
 
 public interface IBookingService
 {
-    Task<BookingResponse> AddBooking(BookingRequest request, CancellationToken cancellationToken);
+    Task<Result<BookingResponse>> AddBooking(BookingRequest request, string userid, CancellationToken cancellationToken = default);
     Task<IEnumerable<BookingResponse>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<BookingResponse> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task DeleteByIdAsync(int id, CancellationToken cancellationToken = default);

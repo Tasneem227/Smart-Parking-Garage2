@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260614074819_AddCarTypeTable")]
+    partial class AddCarTypeTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -585,12 +588,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Property<int?>("GarageId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("LastEntryGateOpenedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastExitGateOpenedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("ParkingSlotId")
                         .HasColumnType("int");
 
@@ -598,9 +595,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<bool>("PriorityApplied")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("ReminderSent")
                         .HasColumnType("bit");
 
                     b.Property<string>("Status")
@@ -915,33 +909,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.HasIndex("ParkingSessionId");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.PhoneVerificationCode", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("phoneVerificationCodes");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Sensor", b =>

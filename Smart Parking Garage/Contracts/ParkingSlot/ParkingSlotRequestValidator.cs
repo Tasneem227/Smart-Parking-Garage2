@@ -16,7 +16,7 @@ public class ParkingSlotRequestValidator : AbstractValidator<ParkingSlotRequest>
         RuleFor(x => x.SlotType)
             .NotEmpty()
             .WithMessage("Slot type is required.")
-            .Must(type => type == "Normal" || type == "EV" || type == "Disabled")
+            .Must(type => type == "sedan" )
             .WithMessage("Slot type must be one of: Normal, EV, Disabled.");
 
         

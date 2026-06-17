@@ -8,7 +8,6 @@ public record BookingResponse
     decimal? Price,
     string Status,
     bool PriorityApplied,
-    int ParkingSlotId,
-    int ? GarageId,
-    string? ApplicationUserId
+    string SlotNumber,
+    int ? GarageId
 );

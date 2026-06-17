@@ -5,8 +5,8 @@ namespace Smart_Parking_Garage.Entities;
 public class ParkingSlot
 {
     public int ParkingSlotId { get; set; }
-    public string SlotNumber { get; set; }  // A1 , A2...
-    public string SlotType { get; set; }    // Normal / EV / Disabled
+    public string SlotNumber { get; set; }  
+    public string SlotType { get; set; }
     public bool IsOccupied { get; set; }
     [Column(TypeName = "decimal(10,2)")]
     public decimal PricePerHour { get; set; }
