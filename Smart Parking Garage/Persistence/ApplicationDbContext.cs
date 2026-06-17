@@ -10,10 +10,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<Gate> Gates { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-    public DbSet<ParkingSession> ParkingSessions { get; set; }
+  
     public DbSet<ParkingSlot> ParkingSlots { get; set; }
     public DbSet<Payment> Payments { get; set; }
-    public DbSet<Sensor> Sensors { get; set; }
+  
     public DbSet<Garage> Garages { get; set; }
     public DbSet<SensorReading> SensorsReadings { get; set; }
     public DbSet<UploadedImage> UploadedImages { get; set; }
@@ -22,7 +22,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<DeviceCommand> DeviceCommands { get; set; }
     public DbSet<AlertLog> AlertLogs { get; set; }
     public DbSet<CarType> CarTypes { get; set; }
-    public DbSet<PhoneVerificationCode>  phoneVerificationCodes { get; set; }
+ 
+    public DbSet<MockCard> MockCards { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,11 +33,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        modelBuilder.Entity<ParkingSlot>()
-         .HasOne(p => p.Sensor)
-         .WithOne(s => s.ParkingSlot)
-         .HasForeignKey<Sensor>(s => s.ParkingSlotId);
-
         modelBuilder.Entity<Gate>()
         .HasOne(x => x.Garage)
         .WithMany(x => x.Gates)
@@ -45,5 +41,25 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.Entity<DeviceCommand>()
        .HasIndex(x => x.CommandId)
        .IsUnique();
+
+        modelBuilder.Entity<MockCard>()
+       .HasOne(c => c.ApplicationUser)
+       .WithMany()
+       .HasForeignKey(c => c.ApplicationUserId)
+       .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Payment>()
+            .HasOne(p => p.MockCard)
+            .WithMany(c => c.Payments)
+            .HasForeignKey(p => p.MockCardId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Payment>()
+        .HasOne(p => p.Booking)
+        .WithMany(b => b.Payments)
+        .HasForeignKey(p => p.BookingId)
+        .OnDelete(DeleteBehavior.NoAction);
+
+
     }
 }

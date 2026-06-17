@@ -24,5 +24,6 @@ public class Booking
     public int? GarageId { get; set; }
     public Garage Garage { get; set; }
     public ParkingSlot? ParkingSlot { get; set; }
-    public ParkingSession? ParkingSession { get; set; }
+    public ICollection<Payment>? Payments { get; set; }
+
 }

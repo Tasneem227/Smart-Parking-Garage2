@@ -53,8 +53,6 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
     }
 
-<<<<<<< HEAD
-=======
     [HttpGet("ConfirmEmail")]
 
     public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string UserId, [FromQuery] string code, CancellationToken cancellationToken)
@@ -132,5 +130,5 @@ public class AuthController(IAuthService authService, IConfiguration configurati
     //    return Ok(_config);
     //}
 
->>>>>>> f8cc2ad81a0b1d12d7f2c77d1a320e0f9a9684ff
+
 }

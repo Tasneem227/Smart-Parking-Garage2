@@ -14,13 +14,11 @@ namespace Smart_Parking_Garage.Services;
 
 public class DeviceService(IWebHostEnvironment webHostEnvironment
                             ,ApplicationDbContext context
-                            ,INotificationService notificationService 
-<<<<<<< HEAD
-    , HttpClient httpClient , IBookingService bookingService ) :IDeviceService
-=======
-    , HttpClient httpClient
-    ,ILogger<DeviceService> logger) :IDeviceService
->>>>>>> f8cc2ad81a0b1d12d7f2c77d1a320e0f9a9684ff
+                            ,INotificationService notificationService
+                            ,ILogger<DeviceService> logger
+                            , HttpClient httpClient , IBookingService bookingService ) :IDeviceService
+
+
 {
 
     private readonly ApplicationDbContext _Context = context;
@@ -260,7 +258,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
 
 
 
-    /// ////////////////////////////////////////////////////////////
+   
   
     public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest  uploadImageRequest , CancellationToken cancellationToken = default)
     {
