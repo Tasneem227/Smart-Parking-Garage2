@@ -2,7 +2,7 @@
 
 public class ChatbotMessageRequest
 {
-    public string Message { get; set; } = string.Empty;
-    public float Latitude { get; set; }
-    public float Longitude { get; set; }
+    public string message { get; set; } = string.Empty;
+    public float latitude { get; set; }
+    public float longitude { get; set; }
 }

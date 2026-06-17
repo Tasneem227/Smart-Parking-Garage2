@@ -16,13 +16,15 @@ namespace Smart_Parking_Garage.Services;
 public class AIModelsService(HttpClient httpClient 
                             ,IWebHostEnvironment webHostEnvironment
                             ,ApplicationDbContext context
-                            ,UserManager<ApplicationUser> userManager ) : IAIModelsService
+                            ,UserManager<ApplicationUser> userManager 
+                            ,ILogger<AIModelsService> logger) : IAIModelsService
 {
     private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/Uploads/images";
 
     private readonly HttpClient _HttpClient = httpClient;
     private readonly ApplicationDbContext _context = context;
     private readonly UserManager<ApplicationUser> _UserManager = userManager;
+    private readonly ILogger<AIModelsService> _Logger = logger;
 
     public async Task<Result<VehicleAiResponse>> ClassifyVehicleAsync(UploadedImageRequest uploadedImageRequest,
                                                             string userid,CancellationToken cancellationToken)
@@ -62,23 +64,33 @@ public class AIModelsService(HttpClient httpClient
             formData);
 
         var responseBody = await response.Content.ReadAsStringAsync();
-        var outer = JsonDocument.Parse(responseBody);
-        var innerJson = outer.RootElement
-            .GetProperty("value")
-            .GetString();
-        var result = JsonSerializer.Deserialize<VehicleAiResponse>(innerJson!);
+        Console.WriteLine($"Status: {response.StatusCode}");
+        Console.WriteLine($"Response: {responseBody}");
+
+        var result = JsonSerializer.Deserialize<VehicleAiResponse>(responseBody);
+
+        if (result is null)
+        {
+            throw new Exception("Failed to deserialize AI response.");
+        }
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception(
+            throw new Exception (
                 $"Vehicle AI Error ({(int)response.StatusCode}): {responseBody}");
         }
-        var uploadedFile = await SaveFile(uploadedImageRequest.Image, cancellationToken);
 
+        var uploadedFile = await SaveFile(uploadedImageRequest.Image, cancellationToken);
+        CarType carType = new CarType
+        {
+            UserId = userid,
+            carType=result.CarType
+        };
         await _context.AddAsync(uploadedFile, cancellationToken);
+        await _context.AddAsync(carType, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(result);
+        return Result.Success(result)!;
     }
     private async Task<UploadedImage> SaveFile(IFormFile file, CancellationToken cancellationToken = default)
     {

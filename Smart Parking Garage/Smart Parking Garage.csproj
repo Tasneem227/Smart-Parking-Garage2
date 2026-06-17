@@ -33,4 +33,8 @@
     <Folder Include="wwwroot\Uploads\Images\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\Templates\EmailConfirmation.html" />
+  </ItemGroup>
+
 </Project>

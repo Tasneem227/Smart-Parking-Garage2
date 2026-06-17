@@ -6,18 +6,31 @@ public class BookingRequestValidator:AbstractValidator<BookingRequest>
 {
     public BookingRequestValidator()
     {
-        RuleFor(x => x.SlotNumber)
-            .NotEmpty();
+
 
         RuleFor(x => x.BookingStart)
             .NotEmpty().WithMessage("StartTime is required.")
-            .GreaterThan(DateTime.UtcNow).WithMessage("StartTime must be in the future.");
-
+            .GreaterThanOrEqualTo(DateTime.UtcNow)
+            .WithMessage("StartTime must be in the future.");
 
         RuleFor(x => x.BookingEnd)
-        .GreaterThan(x => x.BookingStart)
-        .When(x => x.BookingEnd.HasValue)
-        .WithMessage("EndTime must be greater than StartTime.");
+            .NotEmpty().WithMessage("EndTime is required.")
+            .GreaterThan(x => x.BookingStart)
+            .WithMessage("EndTime must be greater than StartTime.");
+
+        RuleFor(x => x.CarType)
+            .NotEmpty()
+            .WithMessage("Car Type is required.")
+            .Must(carType => new[]
+            {
+                "compact",
+                "motorcycle",
+                "sedan",
+                "suv",
+                "truck",
+                "van"
+            }.Contains(carType, StringComparer.OrdinalIgnoreCase))
+            .WithMessage("Car Type must be one of: compact, motorcycle, sedan, suv, truck, van.");
 
 
         //RuleFor(x => x)

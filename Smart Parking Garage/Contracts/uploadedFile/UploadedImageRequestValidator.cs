@@ -2,40 +2,24 @@
 
 namespace Smart_Parking_Garage.Contracts.uploadedFile;
 
-public class FullGarageUploadImageRequestValidator:AbstractValidator<FullGarageUploadImageRequest>
+public class UploadedImageRequestValidator:AbstractValidator<UploadedImageRequest>
 {
-    public FullGarageUploadImageRequestValidator()
+    public UploadedImageRequestValidator()
     {
-
-        RuleFor(x => x.DeviceId)
-            .NotEmpty()
-            .WithMessage("DeviceId is required.");
-
-        RuleFor(x => x.CommandId)
-            .NotEmpty()
-            .WithMessage("CommandId is Required.");
-
-        RuleFor(x => x.ImageType)
-            .NotEmpty()
-            .WithMessage("ImageType is required.")
-            .Must(x => x.Equals("garage_full", StringComparison.OrdinalIgnoreCase))
-            .WithMessage("ImageType must be 'garage_full'.");
-
-        RuleFor(x => x.File)
+        RuleFor(x => x.Image)
             .NotNull()
             .WithMessage("Image file is required.");
 
-        RuleFor(x => x.File)
+        RuleFor(x => x.Image)
             .Must(HaveValidSignature)
-            .When(x => x.File is not null)
+            .When(x => x.Image is not null)
             .WithMessage("Only JPG, JPEG, and PNG files are allowed.");
 
-        RuleFor(x => x.File.Length)
+        RuleFor(x => x.Image.Length)
             .LessThanOrEqualTo(4 * 1024 * 1024)
-            .When(x => x.File is not null)
+            .When(x => x.Image is not null)
             .WithMessage("File size must not exceed 4 MB.");
     }
-
     private static bool HaveValidSignature(IFormFile file)
     {
         using var binary = new BinaryReader(file.OpenReadStream());
@@ -59,4 +43,3 @@ public class FullGarageUploadImageRequestValidator:AbstractValidator<FullGarageU
                 StringComparison.OrdinalIgnoreCase));
     }
 }
-

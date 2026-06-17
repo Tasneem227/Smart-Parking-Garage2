@@ -13,6 +13,8 @@ public class Booking
     [Column(TypeName = "decimal(10,2)")]
     public decimal ?Price { get; set; }
 
+    public bool ReminderSent { get; set; } = false;
+
     // Navigation
     [ForeignKey("ApplicationUserId")]
     public string ApplicationUserId { get; set; }

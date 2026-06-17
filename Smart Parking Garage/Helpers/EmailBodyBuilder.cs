@@ -4,7 +4,7 @@ public static class EmailBodyBuilder
 {
     public static string GenerateEmailBody(string Template,Dictionary<string,string> TemplateModel)
     {
-        var templatePath=$"{Directory.GetCurrentDirectory()}/Templates/{Template}.html";
+        var templatePath=$"{Directory.GetCurrentDirectory()}/wwwroot/Templates/{Template}.html";
         var streamReader=new StreamReader(templatePath);
         var body = streamReader.ReadToEnd();
         streamReader.Close();

@@ -15,11 +15,13 @@ namespace Smart_Parking_Garage.Services;
 public class DeviceService(IWebHostEnvironment webHostEnvironment
                             ,ApplicationDbContext context
                             ,INotificationService notificationService 
-    , HttpClient httpClient) :IDeviceService
+    , HttpClient httpClient
+    ,ILogger<DeviceService> logger) :IDeviceService
 {
 
     private readonly ApplicationDbContext _Context = context;
     private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<DeviceService> _logger = logger;
     private readonly INotificationService _notificationService = notificationService;
     private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/Uploads/Images";
 
@@ -212,7 +214,8 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
   
 
 
-
+    /// ////////////////////////////////////////////////////////////
+  
     public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest  uploadImageRequest , CancellationToken cancellationToken = default)
     {
         var ExistedDevice = await _Context.Devices.FirstOrDefaultAsync(x => x.DeviceId.Equals(uploadImageRequest.DeviceId), cancellationToken);
@@ -234,12 +237,18 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
             ImageType = uploadImageRequest.ImageType,
 
         };
-
+        _logger.LogWarning(
+    "Received Image => CommandId: {CommandId}, FileName: {FileName}, Time: {Time}",
+    uploadImageRequest.CommandId,
+    uploadImageRequest.File.FileName,
+    DateTime.UtcNow);
         var path = Path.Combine(_imagesPath, randomfilename);
         var imageUrl =$"https://smartparkinggaragesystem.runasp.net/Uploads/Images/{randomfilename}";
 
         using var stream = File.Create(path);
         await uploadImageRequest.File.CopyToAsync(stream, cancellationToken);
+        _logger.LogInformation("WebRootPath: {Path}", webHostEnvironment.WebRootPath);
+        _logger.LogInformation("ImagesPath: {Path}", _imagesPath);
 
         await _Context.AddAsync(uploadedFile, cancellationToken);
         await _Context.SaveChangesAsync(cancellationToken);

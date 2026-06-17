@@ -46,7 +46,7 @@ public static class DependencyInjection
         services.AddHttpClient<IDeviceService, DeviceService>();
         services.AddHostedService<CommandRetryService>();
         services.AddScoped<IFileService, FileService>();
-
+        services.AddHostedService<BookingStatusBackgroundService>();
         services.AddScoped<IAIModelsService, AIModelsService>();
         services.AddScoped<IDeviceService, DeviceService>();
 
@@ -188,7 +188,7 @@ public static class DependencyInjection
         services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 8;
-            //options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
            
         });

@@ -1,8 +1,9 @@
 ﻿
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Abstractions.Consts;
 using Smart_Parking_Garage.Entities;
-
+using Smart_Parking_Garage.Errors;
 using System.Security.Claims;
 
 namespace Smart_Parking_Garage.Services;
@@ -14,56 +15,61 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
     private readonly INotificationService _notificationService = notificationService;
 
     //Add Booking
-    public async Task<BookingResponse> AddBooking(BookingRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<BookingResponse>> AddBooking(BookingRequest request, string userid,CancellationToken cancellationToken = default)
     {
         //handle to allow booking if ater the slot book time
-        var slot = _Context.ParkingSlots?.FirstOrDefault(b => b.SlotNumber == request.SlotNumber && b.GarageId == request.GarageId);
-        var isOccupied = slot?.IsOccupied;
-        if (!(bool)isOccupied)
-        {
-            Booking booking = request.Adapt<Booking>();
-            booking.ParkingSlotId = slot.ParkingSlotId;
-            if (request.ApplicationUserId == null)
-            {
-                booking.ApplicationUserId = _HttpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            }
-            booking.Status = "Active";
-            if (booking != null)
-            {
-                await _Context.AddAsync(booking, cancellationToken);
-                slot.IsOccupied = true;
-                await _Context.SaveChangesAsync();
-                ////Garage Full
-                //var garage = await _Context.Garages .Include(g => g.ParkingSlots).FirstOrDefaultAsync(g => g.GarageId == request.GarageId);
-
-                //if (garage != null)
-                //{
-                //    garage.AvailableSlots = garage.ParkingSlots.Count(s => !s.IsOccupied);
-
-                //    if (garage.AvailableSlots == 0)
-                //    {
-                //        await _notificationService.SendAsync(
-                //            booking.ApplicationUserId,
-                //            "Garage Full ⚠️",
-                //            $"Garage {garage.Name} is now full",
-                //            "System"
-                //        );
-                //    }
-                //}
-
-                //Booking Confirmed
-                await _notificationService.SendAsync(
-                   booking.ApplicationUserId,
-                   "Booking Confirmed 🚗",
-                 $"Your slot {slot.SlotNumber} at garage {slot.GarageId} has been booked successfully",
-                    "Booking"
-                );
-                return booking.Adapt<BookingResponse>();
-            }
-            throw new Exception("the booking data are invalid");
+        var ExistUserCarType = await _Context.CarTypes.AnyAsync(x => x.carType == request.CarType.ToLower()
+                                                        && x.UserId == userid,
+                                                          cancellationToken);
+        if (!ExistUserCarType) {
+            return Result.Failure<BookingResponse>(CarTypeErrors.UserCarTypeNotFound);
         }
-        throw new Exception("the Parking slot is occupied");
 
+
+        var slot =await _Context.ParkingSlots.Include(b=>b.Bookings).FirstOrDefaultAsync(
+                                                                     b =>b.GarageId == request.GarageId
+                                                                     && b.SlotType==request.CarType
+                                                                     && (
+                                                                        !b.IsOccupied ||
+                                                                        !b.Bookings.Any(b =>
+                                                                            (b.Status == BookingStatuses.Active ||
+                                                                             b.Status == BookingStatuses.Pending) &&
+                                                                            b.BookingEnd >= request.BookingStart
+                                                                        ))
+                                                                     , cancellationToken);
+        
+        if (slot is null) {
+            return Result.Failure<BookingResponse>(ParkingSlotErrors.NoEmptySlotForCarType);
+        }
+        
+        Booking booking = request.Adapt<Booking>();
+        booking.ParkingSlotId = slot.ParkingSlotId;
+        booking.ApplicationUserId=userid;
+        var minutes = (decimal)(request.BookingEnd - request.BookingStart).TotalMinutes;
+        var totalPrice = (minutes / 60m) * slot.PricePerHour;
+        booking.Price = Math.Round(totalPrice, 2);
+
+        var now = DateTime.UtcNow;
+        booking.Status = booking.BookingStart > now
+            ? BookingStatuses.Pending
+            : BookingStatuses.Active;
+
+        await _Context.AddAsync(booking, cancellationToken);
+        slot.IsOccupied = true;
+        await _Context.SaveChangesAsync();
+             
+        //Booking Confirmed
+        await _notificationService.SendAsync(
+            booking.ApplicationUserId,
+            "Booking Confirmed 🚗",
+            $"Your slot {slot.SlotNumber} at garage {slot.GarageId} has been booked successfully",
+            "Booking"
+        );
+        var bookingResponse = booking.Adapt<BookingResponse>();
+        //dbookingResponse.SlotNumber=slot.SlotNumber;
+
+        return Result.Success(bookingResponse);
+          
     }
 
     public async Task<IEnumerable<BookingResponse>> GetAllAsync(CancellationToken cancellationToken = default)

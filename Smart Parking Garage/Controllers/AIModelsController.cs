@@ -12,9 +12,8 @@ public class AIModelsController([FromForm]IAIModelsService aIModelsService) : Co
     private readonly IAIModelsService _AIModelsService = aIModelsService;
 
     [HttpPost("classify")]
-    [Consumes("multipart/form-data")]
     public async Task<IActionResult> Classify(
-        UploadedImageRequest image)
+      [FromForm]  UploadedImageRequest image)
     {
         
         var result =

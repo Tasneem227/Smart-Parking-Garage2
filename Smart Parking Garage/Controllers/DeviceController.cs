@@ -47,7 +47,7 @@ public class DeviceController(IDeviceService deviceService , IBookingService boo
     }
 
     [HttpPost("camera/upload")]
-    public async Task<IActionResult> Upload(FullGarageUploadImageRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Upload([FromForm] FullGarageUploadImageRequest request, CancellationToken cancellationToken)
     {
         var result = await _DeviceService.UploadAsync(request, cancellationToken);
 
