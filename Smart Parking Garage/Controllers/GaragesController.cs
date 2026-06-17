@@ -17,7 +17,6 @@ public class GaragesController(IGarageService garageService) : ControllerBase
     [HttpGet("locations")]
     public async Task<IActionResult> GetAllGarageLocations(CancellationToken cancellationToken=default)
     {
-
         var garages = await _garageService.GetAllGarageLocationsAsync(cancellationToken);
         return Ok(garages);
     }
@@ -25,12 +24,9 @@ public class GaragesController(IGarageService garageService) : ControllerBase
 
     [HasPermission(Permissions.GetGaragesStatus)]
     [HttpGet("slots-status/{garageId}")]
-    public async Task<IActionResult> GetSlotsStatus(
-    int garageId,
-    CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetSlotsStatus( int garageId,CancellationToken cancellationToken = default)
     {
-        var result = await _garageService
-            .GetSlotsStatusByGarageIdAsync(garageId, cancellationToken);
+        var result = await _garageService.GetSlotsStatusByGarageIdAsync(garageId, cancellationToken);
 
         if (result == null)
             return NotFound();
@@ -40,8 +36,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
 
     [HasPermission(Permissions.GetGarages)]
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-        => Ok(await _garageService.GetAllAsync());
+    public async Task<IActionResult> GetAll() => Ok(await _garageService.GetAllAsync());
 
 
     [HasPermission(Permissions.GetGarageById)]
@@ -75,6 +70,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         var deleted = await _garageService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }
+
     [HttpGet("GarageOwner-Garage-Gates")]
     public async Task<IActionResult> GarageOwnerGaragesAndGates(string GarageOwnerId)
     {

@@ -44,7 +44,7 @@ public static class DependencyInjection
         services.AddHostedService<BookingReminderService>();
         services.AddHostedService<GarageMonitorService>();
         services.AddHttpClient<IDeviceService, DeviceService>();
-        services.AddHostedService<CommandRetryService>();
+      //  services.AddHostedService<CommandRetryService>();
         services.AddScoped<IFileService, FileService>();
 
         services.AddScoped<IAIModelsService, AIModelsService>();

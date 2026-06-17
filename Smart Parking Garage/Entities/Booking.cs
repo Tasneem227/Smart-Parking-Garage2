@@ -12,6 +12,8 @@ public class Booking
     public bool PriorityApplied { get; set; }
     [Column(TypeName = "decimal(10,2)")]
     public decimal ?Price { get; set; }
+    public DateTime? LastEntryGateOpenedAt { get; set; }
+    public DateTime? LastExitGateOpenedAt { get; set; }
 
     // Navigation
     [ForeignKey("ApplicationUserId")]

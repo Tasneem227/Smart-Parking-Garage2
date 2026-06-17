@@ -28,7 +28,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
     }
 
 
-    private async Task HandleCommandsAsync(ApplicationDbContext context,IDeviceService deviceService,CancellationToken cancellationToken)
+    private async Task HandleCommandsAsync(ApplicationDbContext context, IDeviceService deviceService, CancellationToken cancellationToken)
 
     {
         var commands = await context.DeviceCommands.Where(x => x.Status != "done").ToListAsync(cancellationToken);
@@ -46,7 +46,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
                     try
                     {
 
-                        await deviceService.RetryCommandAsync(command,cancellationToken);
+                        await deviceService.RetryCommandAsync(command, cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -64,7 +64,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
             // no ACK yet
             if (command.Status == "pending")
             {
-                var timeoutReached =DateTimeOffset.UtcNow > command.LastSentAt.AddSeconds(timeoutSeconds);
+                var timeoutReached = DateTimeOffset.UtcNow > command.LastSentAt.AddSeconds(timeoutSeconds);
 
                 if (!timeoutReached)
                     continue;
@@ -74,11 +74,11 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
                     try
                     {
 
-                        await deviceService.RetryCommandAsync( command, cancellationToken);
+                        await deviceService.RetryCommandAsync(command, cancellationToken);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError( ex,"Failed to retry command {CommandId}",command.CommandId);
+                        _logger.LogError(ex, "Failed to retry command {CommandId}", command.CommandId);
 
                     }
                 }
@@ -86,3 +86,4 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
         }
     }
 }
+

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Parking_Garage.Abstractions;
 using Smart_Parking_Garage.Contracts.Gate;
 using Smart_Parking_Garage.Services;
 
@@ -14,80 +15,54 @@ public class GatesController (IGateService gateService): ControllerBase
     private readonly IGateService _gateService = gateService;
 
     [HttpGet("AllGates")]
-  //  [Authorize]
+    [Authorize]
     public async Task<IActionResult> GetAllGates(CancellationToken cancellationToken)
     {
-        var allGates = await _gateService.GetAllGatesAsync(cancellationToken);
-
-        var response = allGates.Adapt<IEnumerable<GateResponse>>();
-        return Ok(response);
+        var result = await _gateService.GetAllGatesAsync(cancellationToken);
+        return Ok(result.Value);
     }
-
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetGateById([FromRoute]int id, CancellationToken cancellationToken)
     {
-        var Gate = await _gateService.GetGateByIdAsync(id, cancellationToken);
-        if (Gate is null)
-            return NotFound();
-
-        var response = Gate.Adapt<GateResponse>();
-        return Ok(response);
+        var result = await _gateService.GetGateByIdAsync(id, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : NotFound(result.Error);
     }
 
     [HttpPost("")]
     public async Task<IActionResult> CreateGate([FromBody] GateRequest request, CancellationToken cancellationToken)
     {
-        var newGate = await _gateService.CreateGateAsync(request.Adapt<Gate>(), cancellationToken);
-        var result = newGate.Adapt<GateResponse>();
-        return CreatedAtAction(nameof(GetGateById), new { id = result.GateId }, result);
-
+        var result = await _gateService.CreateGateAsync(request, cancellationToken);
+        return (result.IsSuccess) ? CreatedAtAction(nameof(GetGateById), new { id = result.Value.GateId },result.Value) :
+                Problem(title: result.Error.Code, detail: result.Error.Description,statusCode: result.Error.StatusCode);
     }
-
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateGate([FromRoute]int id, [FromBody] UpdateGateRequest request, CancellationToken cancellationToken)
     {
-        var IsUpdated = await _gateService.UpdateGateAsync(id, request.Adapt<Gate>(), cancellationToken);
-        if (!IsUpdated)
-            return NotFound();
-
-        return NoContent();
+        var result = await _gateService.UpdateGateAsync(id, request, cancellationToken);
+        return (!result.IsSuccess) ? NotFound(result.Error) : NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteGate([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var IsDeleted = await _gateService.DeleteGateAsync(id, cancellationToken);
-        if (!IsDeleted)
-            return NotFound();
-
-        return NoContent();
+        var result = await _gateService.DeleteGateAsync(id, cancellationToken);
+        return (!result.IsSuccess) ? NotFound(result.Error) : NoContent() ; 
     }
+
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateGateStatus( [FromRoute] int id, CancellationToken cancellationToken)
     {
-        var isUpdated = await _gateService
-            .UpdateGateStatusAsync(id, cancellationToken);
-
-        if (!isUpdated)
-            return NotFound();
-
-        return NoContent();
+        var result = await _gateService.UpdateGateStatusAsync(id, cancellationToken);
+        return (!result.IsSuccess) ? NotFound (result.Error) : NoContent() ; 
     }
 
     [HttpGet("garage/{garageId}")]
     public async Task<IActionResult> GetGarageGates(int garageId,CancellationToken cancellationToken)
     {
-        var gates = await _gateService.GetGatesByGarageIdAsync(garageId, cancellationToken);
-
-        if (gates is null)
-            return NotFound("Garage not found");
-
-        var response = gates.Adapt<IEnumerable<GateResponse>>();
-
-        return Ok(response);
+        var result = await _gateService.GetGatesByGarageIdAsync(garageId, cancellationToken);
+        return (!result.IsSuccess) ? NotFound(result.Error) : Ok(result.Value);
     }
-
 
 }

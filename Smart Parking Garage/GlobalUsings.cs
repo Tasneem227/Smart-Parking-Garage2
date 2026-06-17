@@ -8,7 +8,7 @@ global using Smart_Parking_Garage.Contracts.ParkingSlot;
 global using Microsoft.AspNetCore.Mvc;
 global using Smart_Parking_Garage.Services;
 global using Smart_Parking_Garage.Contracts.Authentication;
-
+global using Smart_Parking_Garage.Errors;
 global using Smart_Parking_Garage.Persistence;
 
 

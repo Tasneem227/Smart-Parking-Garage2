@@ -1,6 +1,4 @@
-﻿
-using Azure.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Smart_Parking_Garage.Contracts.Gate;
 
 namespace Smart_Parking_Garage.Services;
 
@@ -8,89 +6,86 @@ public class GateService(ApplicationDbContext context) : IGateService
 {
     private readonly ApplicationDbContext _context = context;
 
-    public async Task<IEnumerable<Gate>> GetAllGatesAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<GateResponse>>> GetAllGatesAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Gates.ToListAsync(cancellationToken);
+       var AllGates = await _context.Gates.ToListAsync(cancellationToken);
+        return Result.Success(AllGates.Adapt<IEnumerable <GateResponse>> ());
     }
 
 
-    public async Task<Gate?> GetGateByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result<GateResponse>> GetGateByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Gates.FirstOrDefaultAsync(x => x.GateId == id, cancellationToken);
+        var gate = await _context.Gates.FirstOrDefaultAsync(x => x.GateId == id, cancellationToken);
+        return gate is not null ? Result.Success(gate.Adapt<GateResponse>()) : Result.Failure<GateResponse>(GarageErrors.GarageNotFound) ;
     }
 
-    public async Task<Gate> CreateGateAsync(Gate gate, CancellationToken cancellationToken = default)
+    public async Task<Result<GateResponse>> CreateGateAsync(GateRequest gate, CancellationToken cancellationToken = default)
     {
-        var garageExists = await _context.Garages
-        .AnyAsync(x => x.GarageId == gate.GarageId,
-              cancellationToken);
+        var garageExists = await _context.Garages.AnyAsync(x => x.GarageId == gate.GarageId,cancellationToken);
 
         if (!garageExists)
-            throw new Exception("Garage not found");
+           return Result.Failure<GateResponse>(GateErrors.GarageNotFound);
 
-        _context.Gates.Add(gate);
+        var newGate = gate.Adapt<Gate>();
+        _context.Gates.Add(newGate);
+
         await _context.SaveChangesAsync(cancellationToken);
-
-        return gate;
+        return Result.Success(newGate.Adapt<GateResponse>());
     }
 
 
-    public async Task<bool> UpdateGateAsync(int id, Gate gate, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateGateAsync(int id, UpdateGateRequest gate, CancellationToken cancellationToken = default)
     {
-        var currentGate = await GetGateByIdAsync(id, cancellationToken);
-        if (currentGate == null)
-            return false;
+        var currentGate = await _context.Gates.FirstOrDefaultAsync(x => x.GateId == id, cancellationToken);
+        if (currentGate is null)
+            return Result.Failure(GateErrors.GateNotFound);
 
-        currentGate.GateType = gate.GateType;
-        currentGate.DeviceId = gate.DeviceId;
-        currentGate.Status = gate.Status;
+        var UpdatedGate = gate.Adapt<Gate>();
+        currentGate.GateType = UpdatedGate.GateType;
+        currentGate.DeviceId = UpdatedGate.DeviceId;
+        currentGate.Status = UpdatedGate.Status;
 
         await _context.SaveChangesAsync(cancellationToken);
-        return true;
+        return Result.Success();
     }
 
-    public async Task<bool> UpdateGateStatusAsync(
-      int id,
-      CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteGateAsync(int id, CancellationToken cancellationToken = default)
     {
-        var currentGate = await GetGateByIdAsync(id, cancellationToken);
+        var Gate = await _context.Gates.FirstOrDefaultAsync(x => x.GateId == id, cancellationToken);
+        if (Gate is null)
+            return Result.Failure(GateErrors.GateNotFound);
+        
+        _context.Remove(Gate);
+        await _context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
 
-        if (currentGate == null)
-            return false;
+    public async Task<Result> UpdateGateStatusAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var currentGate = await _context.Gates.FirstOrDefaultAsync(x => x.GateId == id, cancellationToken);
+
+        if (currentGate is null)
+            return Result.Failure(GateErrors.GateNotFound);
 
         if (currentGate.Status.Equals("Open", StringComparison.OrdinalIgnoreCase))
             currentGate.Status = "Closed";
-        else if (currentGate.Status.Equals("Closed", StringComparison.OrdinalIgnoreCase))
+
+        if (currentGate.Status.Equals("Closed", StringComparison.OrdinalIgnoreCase))
             currentGate.Status = "Open";
-        else
-            return false; 
-
+ 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return true;
+        return Result.Success();
     }
-    public async Task<bool> DeleteGateAsync(int id, CancellationToken cancellationToken = default)
+ 
+    public async Task<Result<IEnumerable<GateResponse>>> GetGatesByGarageIdAsync(int garageId, CancellationToken cancellationToken = default)
     {
-        var Gate = await GetGateByIdAsync(id, cancellationToken);
-        if (Gate == null)
-            return false;
-
-        _context.Remove(Gate);
-        await _context.SaveChangesAsync(cancellationToken);
-        return true;
-    }
-    public async Task<IEnumerable<Gate>?> GetGatesByGarageIdAsync(
-        int garageId,
-        CancellationToken cancellationToken = default)
-    {
-        var garageExists = await _context.Garages
-            .AnyAsync(g => g.GarageId == garageId, cancellationToken);
+        var garageExists = await _context.Garages.AnyAsync(g => g.GarageId == garageId, cancellationToken);
 
         if (!garageExists)
-            return null;
+            return Result.Failure<IEnumerable<GateResponse>>(GateErrors.GarageNotFound);
 
-        return await _context.Gates
-            .Where(g => g.GarageId == garageId)
-            .ToListAsync(cancellationToken);
+        var GatesOfGarage = await _context.Gates.Where(g => g.GarageId == garageId).ToListAsync(cancellationToken);
+        return Result.Success(GatesOfGarage.Adapt<IEnumerable<GateResponse>>());
     }
 }

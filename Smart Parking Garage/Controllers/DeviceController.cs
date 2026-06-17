@@ -1,15 +1,18 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Smart_Parking_Garage.Abstractions;
 using Smart_Parking_Garage.Contracts.Device;
-using Smart_Parking_Garage.Contracts.uploadedFile;
 using Smart_Parking_Garage.Contracts.IOT;
+using Smart_Parking_Garage.Contracts.uploadedFile;
 using System.Security.Claims;
 using System.Threading;
 
 namespace Smart_Parking_Garage.Controllers;
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class DeviceController(IDeviceService deviceService , IBookingService bookingService) : ControllerBase
 {
     private readonly IBookingService _bookingService = bookingService;
@@ -66,43 +69,27 @@ public class DeviceController(IDeviceService deviceService , IBookingService boo
     public async Task<IActionResult> OpenEntryGate(CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
         var booking = await _bookingService.GetCurrentBookingForGateAsync(userId, cancellationToken);
+        if (!booking.IsSuccess)
+            return Problem(title: booking.Error.Code, detail: booking.Error.Description, statusCode: booking.Error.StatusCode);
 
-        if (booking is null)
-            return BadRequest("you can not open the gate , No valid booking found.");
-
-        if (booking.BookingStart.AddMinutes(-5) > DateTime.UtcNow)
-        {
-            return BadRequest("You can open Entry gate only 5 minutes before booking start time.");
-        }
-
-        await _DeviceService.OpenEntryGateAsync(cancellationToken);
-
-        return Ok( "Entry gate opened successfully.");
+        var result = await _DeviceService.OpenEntryGateAsync(userId, cancellationToken);
+        return (result.IsSuccess) ? Ok("Entry gate opened successfully.") : Problem(title: result.Error.Code, detail: result.Error.Description, statusCode: result.Error.StatusCode);
+        
     }
 
-    [HttpPost("open-exit")]
+        [HttpPost("open-exit")]
 
     public async Task<IActionResult> OpenExitGate(CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
         var booking = await _bookingService.GetCurrentBookingForExitGateAsync(userId, cancellationToken);
+        if (!booking.IsSuccess)
+            return Problem(title: booking.Error.Code, detail: booking.Error.Description, statusCode: booking.Error.StatusCode);
 
-        if (booking is null)
-            return BadRequest("you can not open the gate , No valid booking found.");
+        var result = await _DeviceService.OpenExitGateAsync(userId ,cancellationToken);
+        return (result.IsSuccess) ? Ok("Exit gate opened successfully."): Problem(title: result.Error.Code, detail: result.Error.Description, statusCode: result.Error.StatusCode);
 
-
-        await _DeviceService.OpenExitGateAsync(cancellationToken);
-
-        return Ok("Exit gate opened successfully.");
     }
 
     [HttpPost("capture-image")]

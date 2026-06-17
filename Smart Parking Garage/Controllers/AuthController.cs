@@ -49,40 +49,4 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
     }
 
-    //[HttpGet("ConfirmEmail")]
-
-    //public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string UserId, [FromQuery] string code, CancellationToken cancellationToken)
-    //{
-    //    var request = new ConfirmEmailRequest
-    //    {
-    //        UserId = UserId,
-    //        code = code
-    //    };
-    //    var Result = await _AuthService.ConfirmEmailAsync(request);
-
-    //    return Result.IsFailure ? Result.ToProblem() : Ok();
-
-    //}
-    //[HttpPost("ResendConfirmEmail")]
-    //public async Task<IActionResult> ResendConfirmEmailAsync([FromBody] ResendConfirmationEmailRequest request, CancellationToken cancellationToken)
-    //{
-    //    var Result = await _AuthService.ResendConfirmEmailAsync(request);
-
-    //    return Result.IsFailure ? Result.ToProblem() : Ok();
-
-    //}
-
-    //[HttpGet("")]
-    //public IActionResult Test()
-    //{
-    //    var _config = new
-    //    {
-    //        mykey = _JwtOptions.key,
-    //        //connectionString = _Configuration["ConnectionStrings:DefaultConnections"],
-    //        //Hello_java = _Configuration["Hello.java"],
-    //        //ASPNETCORE_ENVIRONMENT = _Configuration["ASPNETCORE_ENVIRONMENT"]
-    //    };
-    //    return Ok(_config);
-    //}
-
 }
