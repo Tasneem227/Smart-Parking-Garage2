@@ -49,10 +49,11 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     }
 
     [HasPermission(Permissions.GetBookingByUserId)]
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetBookingByUserIdAsync([FromRoute] string userId, CancellationToken cancellationToken)
+    [HttpGet("user")]
+    public async Task<IActionResult> GetBookingByUserIdAsync( CancellationToken cancellationToken)
     {
-        var response = await _BookingService.GetByUserIdAsync(userId, cancellationToken);
+
+        var response = await _BookingService.GetByUserIdAsync(User.GetUserId(), cancellationToken);
         if (response == null)
         {
             return BadRequest("There are no bookings Available");
