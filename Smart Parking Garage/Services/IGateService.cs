@@ -1,12 +1,14 @@
-﻿namespace Smart_Parking_Garage.Services;
+﻿using Smart_Parking_Garage.Contracts.Gate;
+
+namespace Smart_Parking_Garage.Services;
 
 public interface IGateService
 {
-    Task<IEnumerable<Gate>> GetAllGatesAsync(CancellationToken cancellationToken = default);
-    Task<Gate?> GetGateByIdAsync(int id , CancellationToken cancellationToken = default);
-    Task<Gate> CreateGateAsync(Gate gate , CancellationToken cancellationToken = default);
-    Task<bool> UpdateGateAsync(int id, Gate gate , CancellationToken cancellationToken = default);
-    Task<bool> UpdateGateStatusAsync(int id,CancellationToken cancellationToken = default);
-    Task<bool> DeleteGateAsync(int id, CancellationToken cancellationToken = default);
-    Task<IEnumerable<Gate>> GetGatesByGarageIdAsync( int garageId, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<GateResponse>>> GetAllGatesAsync(CancellationToken cancellationToken = default);
+    Task<Result<GateResponse>> GetGateByIdAsync(int id , CancellationToken cancellationToken = default);
+    Task<Result<GateResponse>> CreateGateAsync(GateRequest gate, CancellationToken cancellationToken = default);
+    Task<Result> UpdateGateAsync(int id, UpdateGateRequest gate , CancellationToken cancellationToken = default);
+    Task<Result> DeleteGateAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result> UpdateGateStatusAsync(int id,CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<GateResponse>>> GetGatesByGarageIdAsync(int garageId, CancellationToken cancellationToken = default);
 }

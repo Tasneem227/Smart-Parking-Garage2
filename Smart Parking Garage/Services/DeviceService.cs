@@ -14,15 +14,18 @@ namespace Smart_Parking_Garage.Services;
 
 public class DeviceService(IWebHostEnvironment webHostEnvironment
                             ,ApplicationDbContext context
-                            ,INotificationService notificationService 
-    , HttpClient httpClient
-    ,ILogger<DeviceService> logger) :IDeviceService
+                            ,INotificationService notificationService
+                            ,ILogger<DeviceService> logger
+                            , HttpClient httpClient , IBookingService bookingService ) :IDeviceService
+
+
 {
 
     private readonly ApplicationDbContext _Context = context;
     private readonly HttpClient _httpClient = httpClient;
     private readonly ILogger<DeviceService> _logger = logger;
     private readonly INotificationService _notificationService = notificationService;
+    private readonly IBookingService _bookingService = bookingService;
     private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/Uploads/Images";
 
     public async Task<Result<RegisterDeviceResponse>> RegisterDeviceAsync(RegisterDeviceRequest request, CancellationToken cancellationToken)
@@ -110,7 +113,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         return Result.Success(new DeviceResponse("Gate Status Updated Successfully"));
     }
 
-    public async Task SendCommandAsync(DeviceCommandRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> SendCommandAsync(DeviceCommandRequest request, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.PostAsJsonAsync(
             "https://smelting-remedial-unselect.ngrok-free.dev/device/commands",request , cancellationToken);
@@ -119,9 +122,10 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         Console.WriteLine(response);
 
         response.EnsureSuccessStatusCode();
+        return Result.Success();
     }
 
-    public async Task ExecuteCommandAsync(DeviceCommandRequest request,CancellationToken cancellationToken = default)
+    public async Task<Result> ExecuteCommandAsync(DeviceCommandRequest request,CancellationToken cancellationToken = default)
     {
         var command = new DeviceCommand
         {
@@ -137,40 +141,78 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         await _Context.SaveChangesAsync(cancellationToken);
 
         await SendCommandAsync(request, cancellationToken);
+        return Result.Success();
     }
 
-    public async Task OpenEntryGateAsync(CancellationToken cancellationToken = default)
+    public async Task <Result> OpenEntryGateAsync(string userId, CancellationToken cancellationToken = default)
     {
-        await ExecuteCommandAsync(
+        var bookingResult = await _bookingService.GetCurrentBookingForGateAsync(userId,cancellationToken);
+
+        if (!bookingResult.IsSuccess)
+            return Result.Failure(bookingResult.Error);
+
+        var booking = bookingResult.Value;
+
+        if (booking.LastEntryGateOpenedAt.HasValue &&
+            booking.LastEntryGateOpenedAt.Value.AddMinutes(5) > DateTime.UtcNow)
+        {
+            return Result.Failure(DeviceErrors.EntryGateCooldown);
+        }
+
+        var open =  await ExecuteCommandAsync(
             new DeviceCommandRequest
             {
                 CommandId = GenerateCommandId(),
                 Type = DeviceCommands.OpenEntryGateType
             },cancellationToken);
+
+        booking.LastEntryGateOpenedAt = DateTime.UtcNow;
+        await _Context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
     }
 
-    public async Task OpenExitGateAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> OpenExitGateAsync(string userId ,CancellationToken cancellationToken = default)
     {
-        await ExecuteCommandAsync(
+
+        var bookingResult = await _bookingService.GetCurrentBookingForExitGateAsync( userId,cancellationToken);
+
+        if (!bookingResult.IsSuccess)
+            return Result.Failure(bookingResult.Error);
+
+        var booking = bookingResult.Value;
+
+        if (booking.LastExitGateOpenedAt.HasValue &&
+            booking.LastExitGateOpenedAt.Value.AddMinutes(5) > DateTime.UtcNow)
+        {
+            return Result.Failure(DeviceErrors.ExitGateCooldown);
+        }
+
+        var exit = await ExecuteCommandAsync(
             new DeviceCommandRequest
             {
                 CommandId = GenerateCommandId(),
                 Type = DeviceCommands.OpenExitGateType
             },
             cancellationToken);
+
+        booking.LastExitGateOpenedAt = DateTime.UtcNow;
+        await _Context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
-    public async Task CaptureImageAsync(CancellationToken cancellationToken = default)
+    public async Task<Result> CaptureImageAsync(CancellationToken cancellationToken = default)
     {
-        await ExecuteCommandAsync(
+       var capture = await ExecuteCommandAsync(
             new DeviceCommandRequest
             {
                 CommandId = GenerateCommandId(),
                 Type = DeviceCommands.CaptureImage
             },
             cancellationToken);
+        return Result.Success();
     }
    
-    public async Task ProcessCommandAckAsync( DeviceCommandAckRequest request,CancellationToken cancellationToken = default)
+    public async Task<Result> ProcessCommandAckAsync( DeviceCommandAckRequest request,CancellationToken cancellationToken = default)
     {
         var command = await _Context.DeviceCommands.FirstOrDefaultAsync( c => c.CommandId == request.CommandId,cancellationToken);
 
@@ -186,9 +228,11 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         command.TimeStamp = request.TimeStamp;
 
         await _Context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 
-    public async Task RetryCommandAsync( DeviceCommand command,CancellationToken cancellationToken = default)
+
+    public async Task<Result> RetryCommandAsync( DeviceCommand command,CancellationToken cancellationToken = default)
     {
         await SendCommandAsync(
             new DeviceCommandRequest
@@ -204,6 +248,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         command.LastSentAt = DateTimeOffset.UtcNow;
 
         await _Context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 
     private static string GenerateCommandId()
@@ -211,10 +256,9 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         return Guid.NewGuid().ToString("N");
     }
 
-  
 
 
-    /// ////////////////////////////////////////////////////////////
+   
   
     public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest  uploadImageRequest , CancellationToken cancellationToken = default)
     {

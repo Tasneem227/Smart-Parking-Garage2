@@ -5,18 +5,18 @@ namespace Smart_Parking_Garage.Entities;
 public class Payment
 {
     public int PaymentId { get; set; }
-
-
-    public int ParkingSessionId { get; set; }
-
+    public int BookingId { get; set; }
+    public int MockCardId { get; set; }
     public decimal Amount { get; set; }
-    public string Status { get; set; }     // Paid / Failed / Pending
-    public string PaymentMethod { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = string.Empty;
+    public string? FailureReason { get; set; }
+    public string TransactionId { get; set; } = string.Empty;
     public DateTime TransactionTime { get; set; }
 
-    // Navigation
-    [ForeignKey("ApplicationUserId")]
-    public string ApplicationUserId { get; set; }
+    [ForeignKey(nameof(ApplicationUserId))]
+    public string ApplicationUserId { get; set; } = string.Empty;
     public ApplicationUser? ApplicationUser { get; set; }
-    public ParkingSession? ParkingSession { get; set; }
+    public Booking Booking { get; set; }
+    public MockCard? MockCard { get; set; }
 }

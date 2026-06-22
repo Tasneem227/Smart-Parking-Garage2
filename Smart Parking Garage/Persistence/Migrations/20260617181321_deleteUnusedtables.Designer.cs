@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260617181321_deleteUnusedtables")]
+    partial class deleteUnusedtables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -902,13 +905,13 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
                     b.Property<string>("FailureReason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MockCardId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParkingSessionId")
                         .HasColumnType("int");
 
                     b.Property<string>("PaymentMethod")
@@ -929,8 +932,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.HasKey("PaymentId");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("BookingId");
 
                     b.HasIndex("MockCardId");
 
@@ -1239,12 +1240,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Smart_Parking_Garage.Entities.Booking", "Booking")
-                        .WithMany("Payments")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("Smart_Parking_Garage.Entities.MockCard", "MockCard")
                         .WithMany("Payments")
                         .HasForeignKey("MockCardId")
@@ -1252,8 +1247,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
-
-                    b.Navigation("Booking");
 
                     b.Navigation("MockCard");
                 });
@@ -1264,11 +1257,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("Payments");
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.Booking", b =>
-                {
                     b.Navigation("Payments");
                 });
 

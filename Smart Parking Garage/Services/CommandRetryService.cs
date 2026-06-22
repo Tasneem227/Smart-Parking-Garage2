@@ -28,7 +28,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
     }
 
 
-    private async Task HandleCommandsAsync(ApplicationDbContext context,IDeviceService deviceService,CancellationToken cancellationToken)
+    private async Task HandleCommandsAsync(ApplicationDbContext context, IDeviceService deviceService, CancellationToken cancellationToken)
 
     {
         var commands = await context.DeviceCommands.Where(x => x.Status != "done" &&
@@ -89,3 +89,4 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
         }
     }
 }
+

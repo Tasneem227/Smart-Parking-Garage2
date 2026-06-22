@@ -5,6 +5,7 @@ using Smart_Parking_Garage.Abstractions.Consts;
 using Smart_Parking_Garage.Entities;
 using Smart_Parking_Garage.Errors;
 using System.Security.Claims;
+using System.Threading;
 
 namespace Smart_Parking_Garage.Services;
 
@@ -250,22 +251,30 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
         );
     }
 
-    public async Task<Booking?> GetCurrentBookingForGateAsync(string userId,CancellationToken cancellationToken = default)
+    public async Task<Result<Booking>> GetCurrentBookingForGateAsync(string userId,CancellationToken cancellationToken = default)
     {
-        return await _Context.Bookings
-       .Where(b =>b.ApplicationUserId == userId
+        var CurrentBookingForGate = await _Context.Bookings
+       .Where(b => b.ApplicationUserId == userId
            && b.Status != "Cancelled"
            && b.Status != "Completed"
            && b.Status != "Expired")
        .OrderBy(b => b.BookingStart)
        .FirstOrDefaultAsync(cancellationToken);
+
+        if (CurrentBookingForGate is null)
+            return Result.Failure<Booking>(BookingErrors.NoValidBookingToOpenEntryGate);
+
+        else if (CurrentBookingForGate.BookingStart.AddMinutes(-5) > DateTime.UtcNow)
+            return Result.Failure<Booking>(DeviceErrors.EntryGateOpenTooEarly);
+
+        return Result.Success(CurrentBookingForGate);
+
     }
 
-    public async Task<Booking?> GetCurrentBookingForExitGateAsync(string userId,CancellationToken cancellationToken = default)
+    public async Task<Result<Booking>> GetCurrentBookingForExitGateAsync(string userId,CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
-
-        return await _Context.Bookings
+        var CurrentBookingForExitGate = await _Context.Bookings
             .Where(b => b.ApplicationUserId == userId
                 && b.Status != "Completed"
                 && b.Status != "Cancelled"
@@ -275,5 +284,14 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
                 && b.BookingEnd >= now)
             .OrderByDescending(b => b.BookingStart)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (CurrentBookingForExitGate is null)
+            return Result.Failure<Booking>(BookingErrors.NoValidBookingToOpenExitGate);
+
+        return Result.Success(CurrentBookingForExitGate);
     }
+
+           
+            
+
 }

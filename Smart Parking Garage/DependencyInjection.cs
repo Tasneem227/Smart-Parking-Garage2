@@ -34,7 +34,6 @@ public static class DependencyInjection
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailSender, EmailSender>();
-        services.AddScoped<ISensorService, SensorService>();
         services.AddScoped<IParkingSlotService, ParkingSlotService>();
         services.AddScoped<IGateService, GateService>();
         services.AddScoped<IGarageService, GarageService>();
@@ -49,6 +48,7 @@ public static class DependencyInjection
         services.AddHostedService<BookingStatusBackgroundService>();
         services.AddScoped<IAIModelsService, AIModelsService>();
         services.AddScoped<IDeviceService, DeviceService>();
+        services.AddScoped<IPaymentService, PaymentService>();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
 

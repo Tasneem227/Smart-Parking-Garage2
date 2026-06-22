@@ -12,6 +12,8 @@ public class Booking
     public bool PriorityApplied { get; set; }
     [Column(TypeName = "decimal(10,2)")]
     public decimal ?Price { get; set; }
+    public DateTime? LastEntryGateOpenedAt { get; set; }
+    public DateTime? LastExitGateOpenedAt { get; set; }
 
     public bool ReminderSent { get; set; } = false;
 
@@ -22,5 +24,6 @@ public class Booking
     public int? GarageId { get; set; }
     public Garage Garage { get; set; }
     public ParkingSlot? ParkingSlot { get; set; }
-    public ParkingSession? ParkingSession { get; set; }
+    public ICollection<Payment>? Payments { get; set; }
+
 }

@@ -2,20 +2,13 @@
 
 public interface IParkingSlotService
 {
-    Task<IEnumerable<ParkingSlot>> GetAllSlotsAsync(CancellationToken cancellationToken = default);
-
-    Task<ParkingSlot?> GetSlotByIdAsync(int id, CancellationToken cancellationToken = default);
-
-    Task<ParkingSlot> CreateSlotAsync(ParkingSlot request, CancellationToken cancellationToken = default);
-
-    Task<bool> UpdateSlotAsync(int id, ParkingSlot request, CancellationToken cancellationToken = default);
-
-    Task<bool> DeleteSlotAsync(int id, CancellationToken cancellationToken = default);
-
-    Task<IEnumerable<ParkingSlot>> GetAvailableSlotsAsync(CancellationToken cancellationToken = default);
-
-    Task<bool> ToggleOccupancyAsync(int id, CancellationToken cancellationToken = default);
-
-    Task<IEnumerable<ParkingSlot>>GetSlotsByGarageIdAsync( int garageId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<ParkingSlot>?> GetAvailableSlotsByGarageIdAsync(int garageId,CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ParkingSlotResponse>>> GetAllSlotsAsync(CancellationToken cancellationToken = default);
+    Task<Result<ParkingSlotResponse>> GetSlotByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<ParkingSlotResponse>> CreateSlotAsync(ParkingSlotRequest request, CancellationToken cancellationToken = default);
+    Task<Result> UpdateSlotAsync(int id, UpdateParkingSlotRequest request, CancellationToken cancellationToken = default);
+   // Task<Result> DeleteSlotAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ParkingSlotResponse>>> GetAvailableSlotsAsync(CancellationToken cancellationToken = default);
+    Task<Result> ToggleOccupancyAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ParkingSlotResponse>>> GetSlotsByGarageIdAsync( int garageId, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<ParkingSlotResponse>>> GetAvailableSlotsByGarageIdAsync(int garageId,CancellationToken cancellationToken = default);
 }

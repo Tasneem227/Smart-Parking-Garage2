@@ -13,7 +13,7 @@ public class ParkingSlot
 
     public int GarageId { get; set; }
     public Garage? Garage { get; set; }
-    public Sensor? Sensor { get; set; }
+   
     public ICollection<Booking>? Bookings { get; set; }
-    public ICollection<ParkingSession>? ParkingSessions { get; set; }
+   
 }

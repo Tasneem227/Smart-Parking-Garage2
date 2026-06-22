@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260614135355_AddGateOpenTimesToBooking")]
+    partial class AddGateOpenTimesToBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -600,9 +603,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Property<bool>("PriorityApplied")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("ReminderSent")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -616,29 +616,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.HasIndex("ParkingSlotId");
 
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.CarType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("carType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CarTypes");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Device", b =>
@@ -777,47 +754,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("Gates");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.MockCard", b =>
-                {
-                    b.Property<int>("MockCardId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MockCardId"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("Balance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("CVV")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CardHolderName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ExpiryDate")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsBlocked")
-                        .HasColumnType("bit");
-
-                    b.HasKey("MockCardId");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.ToTable("MockCards");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Notification", b =>
                 {
                     b.Property<int>("NotificationId")
@@ -853,6 +789,39 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.HasIndex("ApplicationUserId");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.ParkingSession", b =>
+                {
+                    b.Property<int>("ParkingSessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParkingSessionId"));
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ChargeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EntryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExitTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ParkingSlotId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ParkingSessionId");
+
+                    b.HasIndex("BookingId")
+                        .IsUnique();
+
+                    b.HasIndex("ParkingSlotId");
+
+                    b.ToTable("ParkingSessions");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.ParkingSlot", b =>
@@ -902,13 +871,7 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FailureReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MockCardId")
+                    b.Property<int>("ParkingSessionId")
                         .HasColumnType("int");
 
                     b.Property<string>("PaymentMethod")
@@ -919,10 +882,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TransactionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("TransactionTime")
                         .HasColumnType("datetime2");
 
@@ -930,11 +889,39 @@ namespace Smart_Parking_Garage.Persistence.migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("MockCardId");
+                    b.HasIndex("ParkingSessionId");
 
                     b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.Sensor", b =>
+                {
+                    b.Property<int>("SensorId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SensorId"));
+
+                    b.Property<DateTime>("LastHeartbeat")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ParkingSlotId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SensorId");
+
+                    b.HasIndex("ParkingSlotId")
+                        .IsUnique();
+
+                    b.ToTable("Sensors");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.SensorReading", b =>
@@ -1143,17 +1130,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Navigation("ParkingSlot");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.CarType", b =>
-                {
-                    b.HasOne("Smart_Parking_Garage.Entities.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Device", b =>
                 {
                     b.HasOne("Smart_Parking_Garage.Entities.Garage", "Garage")
@@ -1198,17 +1174,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Navigation("Garage");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.MockCard", b =>
-                {
-                    b.HasOne("Smart_Parking_Garage.Entities.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Notification", b =>
                 {
                     b.HasOne("Smart_Parking_Garage.Entities.ApplicationUser", "ApplicationUser")
@@ -1218,6 +1183,25 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.ParkingSession", b =>
+                {
+                    b.HasOne("Smart_Parking_Garage.Entities.Booking", "Booking")
+                        .WithOne("ParkingSession")
+                        .HasForeignKey("Smart_Parking_Garage.Entities.ParkingSession", "BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Smart_Parking_Garage.Entities.ParkingSlot", "ParkingSlot")
+                        .WithMany("ParkingSessions")
+                        .HasForeignKey("ParkingSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("ParkingSlot");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.ParkingSlot", b =>
@@ -1239,23 +1223,26 @@ namespace Smart_Parking_Garage.Persistence.migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Smart_Parking_Garage.Entities.Booking", "Booking")
+                    b.HasOne("Smart_Parking_Garage.Entities.ParkingSession", "ParkingSession")
                         .WithMany("Payments")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Smart_Parking_Garage.Entities.MockCard", "MockCard")
-                        .WithMany("Payments")
-                        .HasForeignKey("MockCardId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("ParkingSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
 
-                    b.Navigation("Booking");
+                    b.Navigation("ParkingSession");
+                });
 
-                    b.Navigation("MockCard");
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.Sensor", b =>
+                {
+                    b.HasOne("Smart_Parking_Garage.Entities.ParkingSlot", "ParkingSlot")
+                        .WithOne("Sensor")
+                        .HasForeignKey("Smart_Parking_Garage.Entities.Sensor", "ParkingSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ParkingSlot");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.ApplicationUser", b =>
@@ -1269,7 +1256,7 @@ namespace Smart_Parking_Garage.Persistence.migrations
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Booking", b =>
                 {
-                    b.Navigation("Payments");
+                    b.Navigation("ParkingSession");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.Device", b =>
@@ -1288,7 +1275,7 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Navigation("ParkingSlots");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.MockCard", b =>
+            modelBuilder.Entity("Smart_Parking_Garage.Entities.ParkingSession", b =>
                 {
                     b.Navigation("Payments");
                 });
@@ -1296,6 +1283,10 @@ namespace Smart_Parking_Garage.Persistence.migrations
             modelBuilder.Entity("Smart_Parking_Garage.Entities.ParkingSlot", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("ParkingSessions");
+
+                    b.Navigation("Sensor");
                 });
 #pragma warning restore 612, 618
         }
