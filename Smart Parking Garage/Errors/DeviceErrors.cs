@@ -14,5 +14,4 @@ public static class DeviceErrors
     public static readonly Error ExitGateCooldown =
         new( "Device.ExitGateCooldown", "Exit gate can only be opened once every 5 minutes.",StatusCodes.Status400BadRequest);
 
-    
 }

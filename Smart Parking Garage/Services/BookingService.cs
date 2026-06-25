@@ -264,7 +264,7 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
         if (CurrentBookingForGate is null)
             return Result.Failure<Booking>(BookingErrors.NoValidBookingToOpenEntryGate);
 
-        else if (CurrentBookingForGate.BookingStart.AddMinutes(-5) > DateTime.UtcNow)
+        else if (CurrentBookingForGate.BookingStart.AddMinutes(-1) > DateTime.UtcNow)
             return Result.Failure<Booking>(DeviceErrors.EntryGateOpenTooEarly);
 
         return Result.Success(CurrentBookingForGate);
@@ -290,8 +290,5 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
 
         return Result.Success(CurrentBookingForExitGate);
     }
-
-           
-            
 
 }

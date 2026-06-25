@@ -154,7 +154,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         var booking = bookingResult.Value;
 
         if (booking.LastEntryGateOpenedAt.HasValue &&
-            booking.LastEntryGateOpenedAt.Value.AddMinutes(5) > DateTime.UtcNow)
+            booking.LastEntryGateOpenedAt.Value.AddMinutes(1) > DateTime.UtcNow)
         {
             return Result.Failure(DeviceErrors.EntryGateCooldown);
         }
