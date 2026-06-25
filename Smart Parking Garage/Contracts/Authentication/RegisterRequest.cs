@@ -5,5 +5,21 @@ public record registerRequest(
     string Password,
     string UserName,
     string FirstName,
-    string LastName
+    string LastName,
+     string PhoneNumber
     );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

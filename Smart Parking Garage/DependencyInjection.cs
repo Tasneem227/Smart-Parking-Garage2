@@ -47,7 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IFileService, FileService>();
         services.AddHostedService<BookingStatusBackgroundService>();
         services.AddScoped<IAIModelsService, AIModelsService>();
-        services.AddScoped<IDeviceService, DeviceService>();
+        
         services.AddScoped<IPaymentService, PaymentService>();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));

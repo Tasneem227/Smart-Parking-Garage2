@@ -9,13 +9,13 @@ namespace Smart_Parking_Garage.Controllers;
 [ApiController]
 public class GaragesController(IGarageService garageService) : ControllerBase
 {
-    private readonly IGarageService _garageService=garageService;
+    private readonly IGarageService _garageService = garageService;
 
 
     // Returns all garages locations (Id, Latitude, Longitude)
     [HasPermission(Permissions.GetGarages)]
     [HttpGet("locations")]
-    public async Task<IActionResult> GetAllGarageLocations(CancellationToken cancellationToken=default)
+    public async Task<IActionResult> GetAllGarageLocations(CancellationToken cancellationToken = default)
     {
         var garages = await _garageService.GetAllGarageLocationsAsync(cancellationToken);
         return Ok(garages);
@@ -24,7 +24,7 @@ public class GaragesController(IGarageService garageService) : ControllerBase
 
     [HasPermission(Permissions.GetGaragesStatus)]
     [HttpGet("slots-status/{garageId}")]
-    public async Task<IActionResult> GetSlotsStatus( int garageId,CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetSlotsStatus(int garageId, CancellationToken cancellationToken = default)
     {
         var result = await _garageService.GetSlotsStatusByGarageIdAsync(garageId, cancellationToken);
 
@@ -78,4 +78,21 @@ public class GaragesController(IGarageService garageService) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
+    [HttpGet("revenue/{garageId}")]
+    public async Task<IActionResult> GetGarageRevenue(
+    int garageId,
+    CancellationToken cancellationToken)
+    {
+        var result = await _garageService.GetGarageRevenueAsync(
+            garageId,
+            cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(new
+            {
+                GarageId = garageId,
+                TotalRevenue = result.Value
+            })
+            : result.ToProblem();
+    }
 }

@@ -9,11 +9,17 @@ using System.Threading;
 
 namespace Smart_Parking_Garage.Services;
 
-public class BookingService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, INotificationService notificationService) : IBookingService
+public class BookingService(ApplicationDbContext context
+                            , IHttpContextAccessor httpContextAccessor
+                            , INotificationService notificationService
+                            , IServiceProvider serviceProvider
+                            , ILogger<BookingService> logger) : IBookingService
 {
     private readonly ApplicationDbContext _Context = context;
     private readonly IHttpContextAccessor _HttpContextAccessor = httpContextAccessor;
     private readonly INotificationService _notificationService = notificationService;
+    private readonly IServiceProvider _ServiceProvider = serviceProvider;
+    private readonly ILogger<BookingService> _Logger = logger;
 
     //Add Booking
     public async Task<Result<BookingResponse>> AddBooking(BookingRequest request, string userid,CancellationToken cancellationToken = default)
@@ -42,7 +48,21 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
         if (slot is null) {
             return Result.Failure<BookingResponse>(ParkingSlotErrors.NoEmptySlotForCarType);
         }
-        
+        if (slot.SlotNumber == "1" || slot.SlotNumber == "2")
+        {
+            try
+            {
+                var deviceService =
+                _ServiceProvider.GetRequiredService<IDeviceService>();
+                await deviceService.CaptureImageAsync();
+            }
+            catch (Exception ex)
+            {
+                _Logger.LogWarning(ex,
+                    "Image capture failed for slot {SlotNumber}",
+                    slot.SlotNumber);
+            }
+        }
         Booking booking = request.Adapt<Booking>();
         booking.ParkingSlotId = slot.ParkingSlotId;
         booking.ApplicationUserId=userid;
@@ -66,9 +86,10 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
             $"Your slot {slot.SlotNumber} at garage {slot.GarageId} has been booked successfully",
             "Booking"
         );
-        var bookingResponse = booking.Adapt<BookingResponse>();
-        //dbookingResponse.SlotNumber=slot.SlotNumber;
 
+        BookingResponse bookingResponse = booking.Adapt<BookingResponse>();
+
+        bookingResponse.SlotNumber=slot.SlotNumber;
         return Result.Success(bookingResponse);
           
     }
@@ -76,10 +97,21 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
     public async Task<IEnumerable<BookingResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _Context.Bookings
-            .Include(s => s.ParkingSlot)
-            .AsNoTracking()
-            .ProjectToType<BookingResponse>()
-            .ToListAsync(cancellationToken);
+             .Include(b => b.ParkingSlot)
+             .AsNoTracking()
+             .Select(b => new BookingResponse
+             {
+                 BookingId = b.BookingId,
+                 UserId=b.ApplicationUserId,
+                 BookingStart = b.BookingStart,
+                 BookingEnd = b.BookingEnd,
+                 Price = b.Price,
+                 Status = b.Status,
+                 PriorityApplied = b.PriorityApplied,
+                 SlotNumber = b.ParkingSlot != null ? b.ParkingSlot.SlotNumber : null,
+                 GarageId = b.GarageId
+             })
+             .ToListAsync(cancellationToken);
     }
 
     public async Task<BookingResponse> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -264,7 +296,7 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
         if (CurrentBookingForGate is null)
             return Result.Failure<Booking>(BookingErrors.NoValidBookingToOpenEntryGate);
 
-        else if (CurrentBookingForGate.BookingStart.AddMinutes(-5) > DateTime.UtcNow)
+        else if (CurrentBookingForGate.BookingStart.AddMinutes(-1) > DateTime.UtcNow)
             return Result.Failure<Booking>(DeviceErrors.EntryGateOpenTooEarly);
 
         return Result.Success(CurrentBookingForGate);
@@ -291,7 +323,33 @@ public class BookingService(ApplicationDbContext context, IHttpContextAccessor h
         return Result.Success(CurrentBookingForExitGate);
     }
 
-           
-            
+
+
+
+    public async Task<Result> CancelBookingAsync(int bookingId)
+    {
+        var booking = await _Context.Bookings
+            .Include(b => b.ParkingSlot)
+            .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+
+        if (booking is null)
+            return Result.Failure(BookingErrors.BookingNotFound);
+
+        if (booking.Status == BookingStatuses.Cancelled)
+            return Result.Failure(BookingErrors.CancelledBooking);
+
+        if (booking.BookingStart <= DateTime.UtcNow)
+            return Result.Failure(BookingErrors.BookingAlreadyStarted);
+
+        booking.Status = BookingStatuses.Cancelled;
+
+        if (booking.ParkingSlot is not null)
+            booking.ParkingSlot.IsOccupied = false;
+
+        await _Context.SaveChangesAsync();
+
+        return Result.Success();
+    }
+
 
 }

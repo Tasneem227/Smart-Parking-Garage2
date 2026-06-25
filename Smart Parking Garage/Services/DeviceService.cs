@@ -16,7 +16,9 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
                             ,ApplicationDbContext context
                             ,INotificationService notificationService
                             ,ILogger<DeviceService> logger
-                            , HttpClient httpClient , IBookingService bookingService ) :IDeviceService
+                            ,HttpClient httpClient 
+                            ,IBookingService bookingService
+                            ,IAIModelsService aIModelsService) :IDeviceService
 
 
 {
@@ -26,6 +28,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
     private readonly ILogger<DeviceService> _logger = logger;
     private readonly INotificationService _notificationService = notificationService;
     private readonly IBookingService _bookingService = bookingService;
+    private readonly IAIModelsService _AIModelsService = aIModelsService;
     private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/Uploads/Images";
 
     public async Task<Result<RegisterDeviceResponse>> RegisterDeviceAsync(RegisterDeviceRequest request, CancellationToken cancellationToken)
@@ -260,7 +263,8 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
 
    
   
-    public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest  uploadImageRequest , CancellationToken cancellationToken = default)
+    public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest  uploadImageRequest 
+                                                                        , CancellationToken cancellationToken = default)
     {
         var ExistedDevice = await _Context.Devices.FirstOrDefaultAsync(x => x.DeviceId.Equals(uploadImageRequest.DeviceId), cancellationToken);
         if (ExistedDevice is null)
@@ -283,9 +287,9 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         };
         _logger.LogWarning(
     "Received Image => CommandId: {CommandId}, FileName: {FileName}, Time: {Time}",
-    uploadImageRequest.CommandId,
-    uploadImageRequest.File.FileName,
-    DateTime.UtcNow);
+                uploadImageRequest.CommandId,
+                uploadImageRequest.File.FileName,
+                DateTime.UtcNow);
         var path = Path.Combine(_imagesPath, randomfilename);
         var imageUrl =$"https://smartparkinggaragesystem.runasp.net/Uploads/Images/{randomfilename}";
 
@@ -296,8 +300,10 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
 
         await _Context.AddAsync(uploadedFile, cancellationToken);
         await _Context.SaveChangesAsync(cancellationToken);
-
-        return Result.Success(new FullGarageUploadResponse( uploadedFile.Id,uploadImageRequest.CommandId) );
+            
+        //var AnalysisModelresult= await _AIModelsService.AnalyzeParkingImageAsync(new UploadedGarageImageRequest(uploadImageRequest.File));
+            
+        return Result.Success(new FullGarageUploadResponse( uploadedFile.Id,uploadImageRequest.CommandId, new()) );
     }
 
 
@@ -327,4 +333,6 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         await _Context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+    
 }

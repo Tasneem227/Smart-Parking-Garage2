@@ -26,5 +26,11 @@ public class RegisterRequestValidator : AbstractValidator<registerRequest>
         RuleFor(x=>x.LastName)
             .NotEmpty()
             .Length(3, 100);
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty()
+            .WithMessage("Phone Number Is Required")
+            .Length(11)
+            .Matches(RegexPatterns.phone)
+            .WithMessage("Phone number must be a valid Egyptian mobile number (11 digits starting with 01).");
     }
 }

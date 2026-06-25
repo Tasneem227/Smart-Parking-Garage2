@@ -22,6 +22,6 @@ public class MappingConfigurations : IRegister
 
         config.NewConfig<UpdateUserRequest, ApplicationUser>()
             .IgnoreNullValues(true);
-
+       
     }
 }

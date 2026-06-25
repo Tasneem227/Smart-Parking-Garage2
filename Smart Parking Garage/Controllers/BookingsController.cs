@@ -103,4 +103,15 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     }
 
 
+    [HttpPut("cancel/{bookingId}")]
+  
+    public async Task<IActionResult> CancelBooking(int bookingId)
+    {
+        var result = await _BookingService.CancelBookingAsync(bookingId);
+
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok("Booking Cancelled Successfully ");
+    }
 }

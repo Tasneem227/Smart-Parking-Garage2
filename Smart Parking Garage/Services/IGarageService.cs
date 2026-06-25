@@ -14,4 +14,7 @@ public interface IGarageService
     Task<List<GarageLocation>> GetAllGarageLocationsAsync(CancellationToken cancellationToken);
     Task<Result<GarageOwnerGatesAndGaragesRequest>> GarageOwnerGaragesAndGates(
      string garageOwnerId, CancellationToken cancellationToken=default);
+    Task<Result<decimal>> GetGarageRevenueAsync(
+    int garageId,
+    CancellationToken cancellationToken = default);
 }

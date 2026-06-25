@@ -339,7 +339,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             TemplateModel: new Dictionary<string, string>
             {
                 { "{{name}}", user.FirstName },
-                { "{{action_url}}", $"http://smartparkinggaragesystem.runasp.net/auth/forgetPassword?email={user.Email}&code={code}" }
+                { "{{action_url}}", $"http://smartparking://auth/reset-password?code={code}" }
             }
         );
 

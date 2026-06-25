@@ -64,7 +64,9 @@ public class AuthController(IAuthService authService, IConfiguration configurati
         };
         var Result = await _AuthService.ConfirmEmailAsync(request);
 
-        return Result.IsFailure ? Result.ToProblem() : Ok();
+        return Result.IsFailure ? Result.ToProblem() : Content(
+        "<h2>Email confirmed successfully!</h2>",
+        "text/html");
 
     }
     [HttpPost("ResendConfirmEmail")]
@@ -76,31 +78,7 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
     }
 
-    //[HttpPost("send-phone-confirmation")]
-    //public async Task<IActionResult> SendPhoneConfirmation(
-    //CancellationToken cancellationToken)
-    //{
-    //    var result = await _AuthService.SendPhoneConfirmationAsync(
-    //        User.GetUserId());
-
-    //    return result.IsSuccess
-    //        ? Ok()
-    //        : result.ToProblem();
-    //}
-
-    //[HttpPost("confirm-phone")]
-    //public async Task<IActionResult> ConfirmPhone(
-    //[FromBody] ConfirmPhoneRequest request,
-    //CancellationToken cancellationToken)
-    //{
-    //    var result = await _AuthService.ConfirmPhoneAsync(
-    //        User.GetUserId(),
-    //        request.Code);
-
-    //    return result.IsSuccess
-    //        ? Ok()
-    //        : result.ToProblem();
-    //}
+    
 
     [HttpPost("forget-password")]
     public async Task<IActionResult> ForgetPassword([FromBody] forgetPasswordRequest request )
@@ -117,18 +95,5 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
-    //[HttpGet("")]
-    //public IActionResult Test()
-    //{
-    //    var _config = new
-    //    {
-    //        mykey = _JwtOptions.key,
-    //        //connectionString = _Configuration["ConnectionStrings:DefaultConnections"],
-    //        //Hello_java = _Configuration["Hello.java"],
-    //        //ASPNETCORE_ENVIRONMENT = _Configuration["ASPNETCORE_ENVIRONMENT"]
-    //    };
-    //    return Ok(_config);
-    //}
-
-
+    
 }

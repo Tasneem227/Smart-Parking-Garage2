@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Smart_Parking_Garage.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Garage;
 using Smart_Parking_Garage.Errors;
@@ -163,5 +164,23 @@ public class GarageService:IGarageService
             .SingleOrDefaultAsync(cancellationToken);
 
         return Result.Success<GarageOwnerGatesAndGaragesRequest>(garages);
+    }
+
+    public async Task<Result<decimal>> GetGarageRevenueAsync(
+    int garageId,
+    CancellationToken cancellationToken = default)
+    {
+        var garageExists = await _context.Garages
+            .AnyAsync(g => g.GarageId == garageId, cancellationToken);
+
+        if (!garageExists)
+            return Result.Failure<decimal>(GarageErrors.GarageNotFound);
+
+        var totalRevenue = await _context.Bookings
+            .Where(b => b.GarageId == garageId &&
+                        b.Status == BookingStatuses.Completed)
+            .SumAsync(b => b.Price ?? 0, cancellationToken);
+
+        return Result.Success(totalRevenue);
     }
 }

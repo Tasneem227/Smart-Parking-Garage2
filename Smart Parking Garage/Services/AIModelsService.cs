@@ -112,4 +112,52 @@ public class AIModelsService(HttpClient httpClient
 
         return uploadedFile;
     }
+    public async Task<ParkingAiResponse?> AnalyzeParkingImageAsync(
+    UploadedGarageImageRequest uploadedImageRequest ,
+    CancellationToken cancellationToken = default)
+    {
+        if (uploadedImageRequest.photo == null || uploadedImageRequest.photo.Length == 0)
+            throw new Exception("Image file is empty.");
+
+        using var formData = new MultipartFormDataContent();
+
+        await using var stream = uploadedImageRequest.photo.OpenReadStream();
+
+        var fileContent = new StreamContent(stream);
+        fileContent.Headers.ContentType =
+            new MediaTypeHeaderValue(uploadedImageRequest.photo.ContentType);
+
+        formData.Add(
+            fileContent,
+            "photo",
+            uploadedImageRequest.photo.FileName);
+
+        var response = await _HttpClient.PostAsync(
+            "https://parking-spot-occupancy.vercel.app/fixed-camera/analyze",
+            formData,
+            cancellationToken);
+
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        Console.WriteLine($"Status: {response.StatusCode}");
+        Console.WriteLine($"Response: {responseBody}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception(
+                $"Parking AI Error ({(int)response.StatusCode}): {responseBody}");
+        }
+
+        var result = JsonSerializer.Deserialize<ParkingAiResponse>(
+            responseBody,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+        if (result == null)
+            throw new Exception("Failed to deserialize AI response.");
+
+        return result??new();
+    }
 }

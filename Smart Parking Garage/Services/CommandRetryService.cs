@@ -39,7 +39,7 @@ public class CommandRetryService(IServiceScopeFactory scopeFactory, ILogger<Comm
         foreach (var command in commands)
         {
             var timeoutSeconds =
-                command.CommandType == DeviceCommands.CaptureImage ? 30 : 15;
+                command.CommandType == DeviceCommands.CaptureImage ? 60 : 15;
 
             // failed ACK
             if (command.Status == "failed")
