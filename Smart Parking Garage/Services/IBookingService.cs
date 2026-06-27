@@ -12,4 +12,5 @@ public interface IBookingService
     Task DeleteByLastBookingByUserId(string userid, CancellationToken cancellationToken = default);
     Task<Result<Booking>> GetCurrentBookingForGateAsync(string userId,CancellationToken cancellationToken = default);
     Task<Result<Booking>> GetCurrentBookingForExitGateAsync(string userId,CancellationToken cancellationToken = default);
+    Task<Result> CancelBookingAsync(int bookingId);
 }

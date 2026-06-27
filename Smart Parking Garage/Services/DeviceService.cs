@@ -1,22 +1,19 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Smart_Parking_Garage.Constants;
+﻿using Smart_Parking_Garage.Constants;
 using Smart_Parking_Garage.Contracts.Device;
 using Smart_Parking_Garage.Contracts.IOT;
 using Smart_Parking_Garage.Contracts.uploadedFile;
-using Smart_Parking_Garage.Entities;
-using Smart_Parking_Garage.Errors;
-using System;
+using System.ComponentModel.Design;
+using System.Text.Json;
 
 namespace Smart_Parking_Garage.Services;
 
 public class DeviceService(IWebHostEnvironment webHostEnvironment
-                            ,ApplicationDbContext context
-                            ,INotificationService notificationService
-                            ,ILogger<DeviceService> logger
-                            , HttpClient httpClient , IBookingService bookingService ) :IDeviceService
+                            , ApplicationDbContext context
+                            , INotificationService notificationService
+                            , ILogger<DeviceService> logger
+                            , HttpClient httpClient
+                            , IBookingService bookingService
+                            , IAIModelsService aIModelsService) : IDeviceService
 
 
 {
@@ -26,6 +23,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
     private readonly ILogger<DeviceService> _logger = logger;
     private readonly INotificationService _notificationService = notificationService;
     private readonly IBookingService _bookingService = bookingService;
+    private readonly IAIModelsService _AIModelsService = aIModelsService;
     private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/Uploads/Images";
 
     public async Task<Result<RegisterDeviceResponse>> RegisterDeviceAsync(RegisterDeviceRequest request, CancellationToken cancellationToken)
@@ -36,7 +34,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         {
             return Result.Failure<RegisterDeviceResponse>(GarageErrors.GarageNotFound);
         }
-        var ExistedDevice =await _Context.Devices.FirstOrDefaultAsync(x => x.DeviceId.Equals(request.DeviceId),cancellationToken);
+        var ExistedDevice = await _Context.Devices.FirstOrDefaultAsync(x => x.DeviceId.Equals(request.DeviceId), cancellationToken);
         if (ExistedDevice is null)
         {
             Device newDevice = request.Adapt<Device>();
@@ -58,12 +56,12 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         {
             return Result.Failure<DeviceResponse>(DeviceErrors.DeviceNotFound);
         }
-        var environmentReading =await _Context.EnvironmentReadings.FirstOrDefaultAsync(x => x.DeviceId.Equals(request.DeviceId),cancellationToken);
-        
+        var environmentReading = await _Context.EnvironmentReadings.FirstOrDefaultAsync(x => x.DeviceId.Equals(request.DeviceId), cancellationToken);
+
         EnvironmentReading EnvironmentReading = request.Adapt<EnvironmentReading>();
         await _Context.AddAsync(EnvironmentReading, cancellationToken);
-        
-        
+
+
         await _Context.SaveChangesAsync(cancellationToken);
         return Result.Success(new DeviceResponse("Environment Readings Updated Successfully"));
     }
@@ -78,14 +76,14 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
             return Result.Failure<DeviceResponse>(DeviceErrors.DeviceNotFound);
         }
         var garageId = ExistedDevice.GarageId;
-        var ParkingSlot=await _Context.ParkingSlots.FirstOrDefaultAsync(x=>x.GarageId==garageId&&x.SlotNumber==request.slotId.ToString(),cancellationToken);
+        var ParkingSlot = await _Context.ParkingSlots.FirstOrDefaultAsync(x => x.GarageId == garageId && x.SlotNumber == request.slotId.ToString(), cancellationToken);
         if (ParkingSlot is null)
         {
             return Result.Failure<DeviceResponse>(
                 ParkingSlotErrors.SlotNotFound);
         }
 
-        ParkingSlot.IsOccupied =request.Status.Equals("occupied", StringComparison.OrdinalIgnoreCase);
+        ParkingSlot.IsOccupied = request.Status.Equals("occupied", StringComparison.OrdinalIgnoreCase);
 
         await _Context.SaveChangesAsync(cancellationToken);
         return Result.Success(new DeviceResponse("Slot Status Updated Successfully"));
@@ -116,16 +114,16 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
     public async Task<Result> SendCommandAsync(DeviceCommandRequest request, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.PostAsJsonAsync(
-            "https://smelting-remedial-unselect.ngrok-free.dev/device/commands",request , cancellationToken);
+            "https://smelting-remedial-unselect.ngrok-free.dev/device/commands", request, cancellationToken);
 
-        
+
         Console.WriteLine(response);
 
         response.EnsureSuccessStatusCode();
         return Result.Success();
     }
 
-    public async Task<Result> ExecuteCommandAsync(DeviceCommandRequest request,CancellationToken cancellationToken = default)
+    public async Task<Result> ExecuteCommandAsync(DeviceCommandRequest request, CancellationToken cancellationToken = default)
     {
         var command = new DeviceCommand
         {
@@ -133,7 +131,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
             CommandType = request.Type,
             Status = "pending",
             RetryCount = 0,
-            LastSentAt = DateTimeOffset.UtcNow
+            LastSentAt = DateTimeOffset.UtcNow,
         };
 
         _Context.DeviceCommands.Add(command);
@@ -144,9 +142,9 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         return Result.Success();
     }
 
-    public async Task <Result> OpenEntryGateAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<Result> OpenEntryGateAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var bookingResult = await _bookingService.GetCurrentBookingForGateAsync(userId,cancellationToken);
+        var bookingResult = await _bookingService.GetCurrentBookingForGateAsync(userId, cancellationToken);
 
         if (!bookingResult.IsSuccess)
             return Result.Failure(bookingResult.Error);
@@ -159,12 +157,12 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
             return Result.Failure(DeviceErrors.EntryGateCooldown);
         }
 
-        var open =  await ExecuteCommandAsync(
+        var open = await ExecuteCommandAsync(
             new DeviceCommandRequest
             {
                 CommandId = GenerateCommandId(),
                 Type = DeviceCommands.OpenEntryGateType
-            },cancellationToken);
+            }, cancellationToken);
 
         booking.LastEntryGateOpenedAt = DateTime.UtcNow;
         await _Context.SaveChangesAsync(cancellationToken);
@@ -172,10 +170,10 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         return Result.Success();
     }
 
-    public async Task<Result> OpenExitGateAsync(string userId ,CancellationToken cancellationToken = default)
+    public async Task<Result> OpenExitGateAsync(string userId, CancellationToken cancellationToken = default)
     {
 
-        var bookingResult = await _bookingService.GetCurrentBookingForExitGateAsync( userId,cancellationToken);
+        var bookingResult = await _bookingService.GetCurrentBookingForExitGateAsync(userId, cancellationToken);
 
         if (!bookingResult.IsSuccess)
             return Result.Failure(bookingResult.Error);
@@ -183,7 +181,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         var booking = bookingResult.Value;
 
         if (booking.LastExitGateOpenedAt.HasValue &&
-            booking.LastExitGateOpenedAt.Value.AddMinutes(5) > DateTime.UtcNow)
+            booking.LastExitGateOpenedAt.Value.AddMinutes(1) > DateTime.UtcNow)
         {
             return Result.Failure(DeviceErrors.ExitGateCooldown);
         }
@@ -200,21 +198,21 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         await _Context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
-    public async Task<Result> CaptureImageAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<DeviceCommandRequest>> CaptureImageAsync(CancellationToken cancellationToken = default)
     {
-       var capture = await ExecuteCommandAsync(
-            new DeviceCommandRequest
-            {
-                CommandId = GenerateCommandId(),
-                Type = DeviceCommands.CaptureImage
-            },
-            cancellationToken);
-        return Result.Success();
+        var deviceCommandRequest = new DeviceCommandRequest
+        {
+            CommandId = GenerateCommandId(),
+            Type = DeviceCommands.CaptureImage
+        };
+        var capture = await ExecuteCommandAsync(deviceCommandRequest,
+             cancellationToken);
+        return Result.Success(deviceCommandRequest);
     }
-   
-    public async Task<Result> ProcessCommandAckAsync( DeviceCommandAckRequest request,CancellationToken cancellationToken = default)
+
+    public async Task<Result> ProcessCommandAckAsync(DeviceCommandAckRequest request, CancellationToken cancellationToken = default)
     {
-        var command = await _Context.DeviceCommands.FirstOrDefaultAsync( c => c.CommandId == request.CommandId,cancellationToken);
+        var command = await _Context.DeviceCommands.FirstOrDefaultAsync(c => c.CommandId == request.CommandId, cancellationToken);
 
         if (command is null)
             throw new Exception("Command not found.");
@@ -232,14 +230,14 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
     }
 
 
-    public async Task<Result> RetryCommandAsync( DeviceCommand command,CancellationToken cancellationToken = default)
+    public async Task<Result> RetryCommandAsync(DeviceCommand command, CancellationToken cancellationToken = default)
     {
         await SendCommandAsync(
             new DeviceCommandRequest
             {
                 CommandId = command.CommandId,
                 Type = command.CommandType
-            },cancellationToken);
+            }, cancellationToken);
 
         command.RetryCount++;
 
@@ -258,20 +256,21 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
 
 
 
-   
-  
-    public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest  uploadImageRequest , CancellationToken cancellationToken = default)
+    //Upload Image 
+
+    public async Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest uploadImageRequest
+                                                                        , CancellationToken cancellationToken = default)
     {
-        var ExistedDevice = await _Context.Devices.FirstOrDefaultAsync(x => x.DeviceId.Equals(uploadImageRequest.DeviceId), cancellationToken);
-        if (ExistedDevice is null)
+        
+        var existedDevice = await _Context.Devices
+       .FirstOrDefaultAsync(x => x.DeviceId == uploadImageRequest.DeviceId, cancellationToken);
+        if (existedDevice is null)
         {
             return Result.Failure<FullGarageUploadResponse>(DeviceErrors.DeviceNotFound);
         }
 
         var extension = Path.GetExtension(uploadImageRequest.File.FileName);
-
         var randomfilename = $"{Guid.NewGuid()}{extension}";
-
         var uploadedFile = new UploadedImage
         {
             ImageName = uploadImageRequest.File.FileName,
@@ -282,27 +281,48 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
 
         };
         _logger.LogWarning(
-    "Received Image => CommandId: {CommandId}, FileName: {FileName}, Time: {Time}",
-    uploadImageRequest.CommandId,
-    uploadImageRequest.File.FileName,
-    DateTime.UtcNow);
+"Received Image => CommandId: {CommandId}, FileName: {FileName}, Time: {Time}",
+        uploadImageRequest.CommandId,
+        uploadImageRequest.File.FileName,
+        DateTime.UtcNow);
         var path = Path.Combine(_imagesPath, randomfilename);
-        var imageUrl =$"https://smartparkinggaragesystem.runasp.net/Uploads/Images/{randomfilename}";
-
+        var imageUrl = $"https://smartparkinggaragesystem.runasp.net/Uploads/Images/{randomfilename}";
         using var stream = File.Create(path);
         await uploadImageRequest.File.CopyToAsync(stream, cancellationToken);
-        _logger.LogInformation("WebRootPath: {Path}", webHostEnvironment.WebRootPath);
-        _logger.LogInformation("ImagesPath: {Path}", _imagesPath);
 
+
+        var analysis = await _AIModelsService.AnalyzeParkingImageAsync(
+            new UploadedGarageImageRequest
+            {
+                photo = uploadImageRequest.File
+            },
+            cancellationToken);
+        var command = await _Context.DeviceCommands.FirstOrDefaultAsync(d => d.CommandId == uploadImageRequest.CommandId, cancellationToken);
+        if (command is null)
+        {
+            return Result.Failure<FullGarageUploadResponse>(DeviceErrors.CommandNotFound);
+        }                                                      
+
+        var capturedImage = new CapturedImage
+        {
+            CommandId =command.Id ,
+            ImageUrl = imageUrl,
+            CreatedAt = DateTimeOffset.UtcNow,
+            AnalysisJson = JsonSerializer.Serialize(analysis)
+        };
+
+
+        await _Context.CapturedImages.AddAsync(capturedImage, cancellationToken);
         await _Context.AddAsync(uploadedFile, cancellationToken);
         await _Context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(new FullGarageUploadResponse( uploadedFile.Id,uploadImageRequest.CommandId) );
+        return Result.Success(
+    new FullGarageUploadResponse(uploadedFile.Id, uploadImageRequest.CommandId));
     }
 
 
 
-    public async Task<Result> GasAlertAsync(GasAlertRequest  gasAlertRequest, CancellationToken cancellationToken = default)
+    public async Task<Result> GasAlertAsync(GasAlertRequest gasAlertRequest, CancellationToken cancellationToken = default)
     {
         var ExistedDevice = await _Context.Devices.FirstOrDefaultAsync(x => x.DeviceId.Equals(gasAlertRequest.DeviceId), cancellationToken);
         if (ExistedDevice is null)
@@ -327,4 +347,34 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         await _Context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+    public async Task<Result<ParkingAiResponse>> GetCaptureResultAsync(string commandId, CancellationToken cancellationToken = default)
+    {
+
+        var command = await _Context.DeviceCommands.FirstOrDefaultAsync(d => d.CommandId == commandId && d.CommandType == "CAPTURE_IMAGE" && d.Status == "done"
+                                                                        , cancellationToken);
+        if (command is null)
+        {
+            return Result.Failure<ParkingAiResponse>(DeviceErrors.CommandNotFound);
+        }
+        var capturedImage = await _Context.CapturedImages
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.CommandId == command.Id,
+                cancellationToken);
+
+        if (capturedImage is null)
+            return Result.Failure<ParkingAiResponse>(
+                UploadedFileErrors.ImageNotFound);
+
+        var response = string.IsNullOrWhiteSpace(capturedImage.AnalysisJson)
+                             ? new ParkingAiResponse()
+                             : JsonSerializer.Deserialize<ParkingAiResponse>(
+                                 capturedImage.AnalysisJson)!;
+
+        response.ImageUrl = capturedImage.ImageUrl;
+
+        return Result.Success(response);
+    }
+
 }

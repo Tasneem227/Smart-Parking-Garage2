@@ -46,8 +46,10 @@ public static class DependencyInjection
         services.AddHostedService<CommandRetryService>();
         services.AddScoped<IFileService, FileService>();
         services.AddHostedService<BookingStatusBackgroundService>();
-        services.AddScoped<IAIModelsService, AIModelsService>();
-        services.AddScoped<IDeviceService, DeviceService>();
+        services.AddHttpClient<IAIModelsService, AIModelsService>(client =>
+        {
+            client.Timeout = TimeSpan.FromMinutes(5);
+        });
         services.AddScoped<IPaymentService, PaymentService>();
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));

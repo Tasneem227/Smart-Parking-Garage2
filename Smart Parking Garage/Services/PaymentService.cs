@@ -50,7 +50,12 @@ public class PaymentService(ApplicationDbContext context)
             TransactionTime = DateTime.UtcNow,
             ApplicationUserId = userId
         };
+        var garage = await _context.Garages.FirstOrDefaultAsync(g => g.GarageId == booking.GarageId);
 
+        if (garage is not null)
+        {
+            garage.TotalRevenue += payment.Amount;
+        }
         _context.Payments.Add(payment);
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Success( new PaymentResponse( "Payment completed successfully"));

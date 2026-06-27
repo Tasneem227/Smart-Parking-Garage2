@@ -17,6 +17,9 @@ public class BookingRequestValidator:AbstractValidator<BookingRequest>
             .NotEmpty().WithMessage("EndTime is required.")
             .GreaterThan(x => x.BookingStart)
             .WithMessage("EndTime must be greater than StartTime.");
+        RuleFor(x => x)
+            .Must(x => x.BookingEnd >= x.BookingStart.AddMinutes(30))
+            .WithMessage("Minimum booking duration is 30 minutes.");
 
         RuleFor(x => x.CarType)
             .NotEmpty()
@@ -33,8 +36,5 @@ public class BookingRequestValidator:AbstractValidator<BookingRequest>
             .WithMessage("Car Type must be one of: compact, motorcycle, sedan, suv, truck, van.");
 
 
-        //RuleFor(x => x)
-        //    .Must(x => (x.BookingEnd - x.BookingStart).TotalHours <= 24)
-        //    .WithMessage("You cannot book a slot for more than 24 hours.");
     }
 }

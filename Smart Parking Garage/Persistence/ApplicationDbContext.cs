@@ -24,6 +24,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CarType> CarTypes { get; set; }
  
     public DbSet<MockCard> MockCards { get; set; }
+    public DbSet<CapturedImage> CapturedImages { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

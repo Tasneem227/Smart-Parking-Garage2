@@ -95,9 +95,9 @@ public class DeviceController(IDeviceService deviceService , IBookingService boo
     [HttpPost("capture-image")]
     public async Task<IActionResult> CaptureImage(CancellationToken cancellationToken)
     {
-        await _DeviceService.CaptureImageAsync(cancellationToken);
+        var result = await _DeviceService.CaptureImageAsync(cancellationToken);
 
-        return Ok("Capture image command sent.");
+        return Ok(result.Value);
     }
 
     [HttpPost("commands/ack")]
@@ -108,7 +108,19 @@ public class DeviceController(IDeviceService deviceService , IBookingService boo
         return Ok("Command acknowledgement received ");
     }
 
-   
 
-    
+    [HttpGet("capture-result/{commandId}")]
+    public async Task<IActionResult> GetCaptureResult(
+    string commandId,
+    CancellationToken cancellationToken)
+    {
+        var result = await _DeviceService.GetCaptureResultAsync(
+            commandId,
+            cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
+    }
+
 }

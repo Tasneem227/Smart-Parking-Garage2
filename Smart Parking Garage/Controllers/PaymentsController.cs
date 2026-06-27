@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Parking_Garage.Authentication.Filters;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Payment;
 using Smart_Parking_Garage.Services;
 using System.Security.Claims;
@@ -11,7 +13,8 @@ namespace Smart_Parking_Garage.Controllers;
 public class PaymentsController(IPaymentService paymentService) : ControllerBase
 {
     private readonly IPaymentService _paymentService = paymentService;
-    
+
+    [HasPermission(Permissions.Pay)]
     [HttpPost]
     public async Task<IActionResult> Pay( PaymentRequest request,CancellationToken cancellationToken)
     {

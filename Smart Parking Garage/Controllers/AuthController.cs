@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Smart_Parking_Garage.Authentication.Filters;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.Authentication;
 using Smart_Parking_Garage.Services;
 using Smart_Parking_Garage.Settings;
@@ -22,6 +25,8 @@ public class AuthController(IAuthService authService, IConfiguration configurati
     private readonly UserManager<ApplicationUser> _UserManager = userManager;
     private readonly JwtOptions _JwtOptions = JwtOptions.Value;
 
+
+    
     [HttpPost("Login")]
     public async Task<IActionResult> LoginAsync([FromBody]LoginRequestUser loginRequest,CancellationToken cancellationToken)
     {
@@ -53,8 +58,8 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
     }
 
+    
     [HttpGet("ConfirmEmail")]
-
     public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string UserId, [FromQuery] string code, CancellationToken cancellationToken)
     {
         var request = new ConfirmEmailRequest
@@ -64,9 +69,13 @@ public class AuthController(IAuthService authService, IConfiguration configurati
         };
         var Result = await _AuthService.ConfirmEmailAsync(request);
 
-        return Result.IsFailure ? Result.ToProblem() : Ok();
+        return Result.IsFailure ? Result.ToProblem() : Content(
+        "<h2>Email confirmed successfully!</h2>",
+        "text/html");
 
     }
+
+   
     [HttpPost("ResendConfirmEmail")]
     public async Task<IActionResult> ResendConfirmEmailAsync([FromBody] ResendConfirmationEmailRequest request, CancellationToken cancellationToken)
     {
@@ -76,59 +85,6 @@ public class AuthController(IAuthService authService, IConfiguration configurati
 
     }
 
-    //[HttpPost("send-phone-confirmation")]
-    //public async Task<IActionResult> SendPhoneConfirmation(
-    //CancellationToken cancellationToken)
-    //{
-    //    var result = await _AuthService.SendPhoneConfirmationAsync(
-    //        User.GetUserId());
-
-    //    return result.IsSuccess
-    //        ? Ok()
-    //        : result.ToProblem();
-    //}
-
-    //[HttpPost("confirm-phone")]
-    //public async Task<IActionResult> ConfirmPhone(
-    //[FromBody] ConfirmPhoneRequest request,
-    //CancellationToken cancellationToken)
-    //{
-    //    var result = await _AuthService.ConfirmPhoneAsync(
-    //        User.GetUserId(),
-    //        request.Code);
-
-    //    return result.IsSuccess
-    //        ? Ok()
-    //        : result.ToProblem();
-    //}
-
-    [HttpPost("forget-password")]
-    public async Task<IActionResult> ForgetPassword([FromBody] forgetPasswordRequest request )
-    {
-        var result = await _AuthService.SendResetPasswordCodeAsync(request.email);
-
-        return result.IsSuccess ? Ok() : result.ToProblem();
-    }
-
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] resetPasswordRequest request)
-    {
-        var result = await _AuthService.ResetPasswordAsync(request);
-
-        return result.IsSuccess ? Ok() : result.ToProblem();
-    }
-    //[HttpGet("")]
-    //public IActionResult Test()
-    //{
-    //    var _config = new
-    //    {
-    //        mykey = _JwtOptions.key,
-    //        //connectionString = _Configuration["ConnectionStrings:DefaultConnections"],
-    //        //Hello_java = _Configuration["Hello.java"],
-    //        //ASPNETCORE_ENVIRONMENT = _Configuration["ASPNETCORE_ENVIRONMENT"]
-    //    };
-    //    return Ok(_config);
-    //}
-
-
+    
+    
 }

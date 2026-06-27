@@ -49,10 +49,11 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     }
 
     [HasPermission(Permissions.GetBookingByUserId)]
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetBookingByUserIdAsync([FromRoute] string userId, CancellationToken cancellationToken)
+    [HttpGet("user")]
+    public async Task<IActionResult> GetBookingByUserIdAsync( CancellationToken cancellationToken)
     {
-        var response = await _BookingService.GetByUserIdAsync(userId, cancellationToken);
+
+        var response = await _BookingService.GetByUserIdAsync(User.GetUserId(), cancellationToken);
         if (response == null)
         {
             return BadRequest("There are no bookings Available");
@@ -101,5 +102,17 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
     }
 
+    [Authorize]
+    [HasPermission(Permissions.CancelBooking)]
+    [HttpPut("cancel/{bookingId}")]
+  
+    public async Task<IActionResult> CancelBooking(int bookingId)
+    {
+        var result = await _BookingService.CancelBookingAsync(bookingId);
 
+        if (!result.IsSuccess)
+            return BadRequest(result);
+
+        return Ok("Booking Cancelled Successfully ");
+    }
 }

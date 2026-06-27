@@ -17,8 +17,9 @@ public interface IDeviceService
     Task<Result> RetryCommandAsync(DeviceCommand command, CancellationToken cancellationToken = default);
     Task<Result> OpenEntryGateAsync(string userId ,CancellationToken cancellationToken = default);
     Task<Result> OpenExitGateAsync(string userId ,CancellationToken cancellationToken = default);
-    Task<Result> CaptureImageAsync(CancellationToken cancellationToken = default);
+    Task<Result<DeviceCommandRequest>> CaptureImageAsync(CancellationToken cancellationToken = default);
     Task<Result<FullGarageUploadResponse>> UploadAsync(FullGarageUploadImageRequest uploadImageRequest, CancellationToken cancellationToken = default);
     Task<Result> GasAlertAsync(GasAlertRequest gasAlertRequest, CancellationToken cancellationToken = default);
+    Task<Result<ParkingAiResponse>> GetCaptureResultAsync(string commandId, CancellationToken cancellationToken = default);
 }
 
