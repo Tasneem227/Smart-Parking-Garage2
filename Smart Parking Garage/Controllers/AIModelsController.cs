@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Smart_Parking_Garage.Authentication.Filters;
+using Smart_Parking_Garage.Contracts.Abstractions.Consts;
 using Smart_Parking_Garage.Contracts.uploadedFile;
 
 namespace Smart_Parking_Garage.Controllers;
@@ -11,6 +13,7 @@ public class AIModelsController(IAIModelsService aIModelsService) : ControllerBa
 {
     private readonly IAIModelsService _AIModelsService = aIModelsService;
 
+    [HasPermission(Permissions.Classify)]
     [HttpPost("classify")]
     public async Task<IActionResult> Classify(
       [FromForm]  UploadedImageRequest image)
@@ -21,6 +24,7 @@ public class AIModelsController(IAIModelsService aIModelsService) : ControllerBa
 
         return Ok(result.Value);
     }
+    [HasPermission(Permissions.Analysis)]
     [HttpPost("SlotsAnalysis")]
     public async Task<IActionResult> Analysis(
       [FromForm] UploadedGarageImageRequest photo)

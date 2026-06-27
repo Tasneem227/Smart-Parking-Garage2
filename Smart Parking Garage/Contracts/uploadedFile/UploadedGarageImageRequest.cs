@@ -1,7 +1,8 @@
 ﻿namespace Smart_Parking_Garage.Contracts.uploadedFile;
 
-public record UploadedGarageImageRequest(
+public class UploadedGarageImageRequest
+{
 
-    IFormFile photo
+    public IFormFile photo { get; set; }
+}
 
-);

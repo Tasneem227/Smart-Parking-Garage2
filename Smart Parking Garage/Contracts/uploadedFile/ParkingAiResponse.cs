@@ -2,6 +2,7 @@
 
 public class ParkingAiResponse
 {
+    public string ImageUrl { get; set; } = string.Empty;
     public List<ParkingSlotDto> Slots { get; set; } = new();
 }
 

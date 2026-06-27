@@ -102,7 +102,8 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
     }
 
-
+    [Authorize]
+    [HasPermission(Permissions.CancelBooking)]
     [HttpPut("cancel/{bookingId}")]
   
     public async Task<IActionResult> CancelBooking(int bookingId)

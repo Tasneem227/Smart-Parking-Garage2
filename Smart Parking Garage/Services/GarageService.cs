@@ -68,6 +68,7 @@ public class GarageService:IGarageService
             .Select(g => new Garage
             {
                 GarageId = g.GarageId,
+                OwnerId=g.OwnerId,
                 Name = g.Name,
                 Address = g.Address,
                 Latitude = g.Latitude,

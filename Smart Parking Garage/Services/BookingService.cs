@@ -20,6 +20,7 @@ public class BookingService(ApplicationDbContext context
     private readonly INotificationService _notificationService = notificationService;
     private readonly IServiceProvider _ServiceProvider = serviceProvider;
     private readonly ILogger<BookingService> _Logger = logger;
+    private readonly TimeZoneInfo egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
 
     //Add Booking
     public async Task<Result<BookingResponse>> AddBooking(BookingRequest request, string userid,CancellationToken cancellationToken = default)
@@ -75,6 +76,7 @@ public class BookingService(ApplicationDbContext context
             ? BookingStatuses.Pending
             : BookingStatuses.Active;
 
+        
         await _Context.AddAsync(booking, cancellationToken);
         slot.IsOccupied = true;
         await _Context.SaveChangesAsync();
@@ -93,7 +95,7 @@ public class BookingService(ApplicationDbContext context
         return Result.Success(bookingResponse);
           
     }
-
+    
     public async Task<IEnumerable<BookingResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _Context.Bookings
@@ -296,7 +298,7 @@ public class BookingService(ApplicationDbContext context
         if (CurrentBookingForGate is null)
             return Result.Failure<Booking>(BookingErrors.NoValidBookingToOpenEntryGate);
 
-        else if (CurrentBookingForGate.BookingStart.AddMinutes(-1) > DateTime.UtcNow)
+        else if (CurrentBookingForGate.BookingStart.AddMinutes(-5) > DateTime.UtcNow)
             return Result.Failure<Booking>(DeviceErrors.EntryGateOpenTooEarly);
 
         return Result.Success(CurrentBookingForGate);

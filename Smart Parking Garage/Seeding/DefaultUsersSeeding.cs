@@ -118,10 +118,18 @@ public class DefaultUsersSeeding
             Permissions.GetGarageById,
             Permissions.GetBookingById,
             Permissions.GetBookings,
-            Permissions.GetBookingByUserId
+            Permissions.GetBookingByUserId,
+            Permissions.Classify,
+            Permissions.Analysis,
+            
+            Permissions.ConfirmEmail,
+            Permissions.Login,
+            Permissions.CancelBooking,
+            Permissions.GetGarageGateByOwnerId,
+            Permissions.GarageRevenue
         };
 
-        var UserNewPermissions = new List<string>
+    var UserNewPermissions = new List<string>
         {
             Permissions.GetGarageById,
             Permissions.GetGarages,
@@ -135,7 +143,16 @@ public class DefaultUsersSeeding
             Permissions.SendChatbotMessage,
             Permissions.UpdateBookings,
             Permissions.UpdateParkingSlots,
-            Permissions.AddBookings
+            Permissions.AddBookings,
+            Permissions.Classify,
+            Permissions.Analysis,
+            
+            Permissions.ConfirmEmail,
+            Permissions.Login,
+            Permissions.CancelBooking,
+            Permissions.GetGarageGateByOwnerId,
+            Permissions.Pay
+
             
         };
        

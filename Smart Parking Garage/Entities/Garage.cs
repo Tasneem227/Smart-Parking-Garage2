@@ -19,6 +19,8 @@ public class Garage
     public int AvailableSlots { get; set; }
 
     public bool IsActive { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TotalRevenue { get; set; } = 0;
 
     [ForeignKey("ApplicationUserId")]
     public string OwnerId { get; set; }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Smart_Parking_Garage.Persistence;
 
@@ -11,9 +12,11 @@ using Smart_Parking_Garage.Persistence;
 namespace Smart_Parking_Garage.Persistence.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260626134545_GarageTotalRevenue")]
+    partial class GarageTotalRevenue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -618,34 +621,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.ToTable("Bookings");
                 });
 
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.CapturedImage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AnalysisJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("CommandId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommandId");
-
-                    b.ToTable("CapturedImages");
-                });
-
             modelBuilder.Entity("Smart_Parking_Garage.Entities.CarType", b =>
                 {
                     b.Property<int>("Id")
@@ -1172,17 +1147,6 @@ namespace Smart_Parking_Garage.Persistence.migrations
                     b.Navigation("Garage");
 
                     b.Navigation("ParkingSlot");
-                });
-
-            modelBuilder.Entity("Smart_Parking_Garage.Entities.CapturedImage", b =>
-                {
-                    b.HasOne("DeviceCommand", "DeviceCommand")
-                        .WithMany()
-                        .HasForeignKey("CommandId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DeviceCommand");
                 });
 
             modelBuilder.Entity("Smart_Parking_Garage.Entities.CarType", b =>

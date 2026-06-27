@@ -273,7 +273,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             new Dictionary<string, string>
             {
                 { "{{name}}", user.FirstName },
-                    { "{{action_url}}", $"http://smartparkinggaragesystem.runasp.net/auth/ConfirmEmail?userId={user.Id}&code={code}" }
+                    { "{{action_url}}", $"https://smartparkinggaragesystem.runasp.net/auth/ConfirmEmail?userId={user.Id}&code={code}" }
             }
         );
 
@@ -339,7 +339,7 @@ public class AuthService(UserManager<ApplicationUser> userManager,
             TemplateModel: new Dictionary<string, string>
             {
                 { "{{name}}", user.FirstName },
-                { "{{action_url}}", $"http://smartparking://auth/reset-password?code={code}" }
+                { "{{action_url}}", $"https://smartparking://auth/reset-password?code={code}" }
             }
         );
 

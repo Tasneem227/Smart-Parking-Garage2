@@ -13,6 +13,7 @@ public class Permissions
     public const string DeleteBookingsByUserId = "Bookings:deleteByUserId";
 
     public const string SendChatbotMessage = "Chatbot:send";
+    
 
     public const string GetGarages = "Garages:read";
     public const string GetGarageById = "Garage:read";
@@ -20,6 +21,7 @@ public class Permissions
     public const string AddGarages = "Garages:add";
     public const string UpdateGarages = "Garages:update";
     public const string DeleteGarages = "Garages:delete";
+    
 
     public const string GetGates = "Gates:read";
     public const string UpdateGatesStatus = "Gates:updatestatus";
@@ -44,6 +46,17 @@ public class Permissions
     public const string AddRoles = "roles:add";
     public const string UpdateRoles = "roles:update";
 
+
+    public const string Classify = "AiModel:Classify";
+    public const string Analysis = "AiModel:Analysis";
+    public const string Pay = "Payment:Pay";
+
+    
+    public const string ConfirmEmail = "Auth:ConfirmEmail";
+    public const string Login = "Auth:Login";
+    public const string CancelBooking = "Bookings:cancel";
+    public const string GetGarageGateByOwnerId = "Garages:GateByOwnerId";
+    public const string GarageRevenue = "Garages:Revenue";
 
     public static IList<string?> GetAllPermissions() =>
         typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string).ToList();
