@@ -114,6 +114,16 @@ public class BookingService(ApplicationDbContext context
         }
         throw new Exception("there is no booking with this Booking Id");
     }
+
+    public async Task<Result<IEnumerable<BookingResponse>>> GetBookingsByGarageIdAsync(int garageId, CancellationToken cancellationToken = default)
+    {
+        var bookings = await _Context.Bookings
+            .Where(b => b.GarageId == garageId)
+            .ProjectToType<BookingResponse>()
+            .ToListAsync(cancellationToken);
+
+        return Result.Success<IEnumerable<BookingResponse>>(bookings);
+    }
     public async Task<List<BookingResponse>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         var Booking = await _Context.Bookings.Where(x => x.ApplicationUserId == userId).ToListAsync(cancellationToken);
@@ -287,7 +297,7 @@ public class BookingService(ApplicationDbContext context
         if (CurrentBookingForGate is null)
             return Result.Failure<Booking>(BookingErrors.NoValidBookingToOpenEntryGate);
 
-        else if (CurrentBookingForGate.BookingStart.AddMinutes(-5) > DateTime.UtcNow)
+        else if (CurrentBookingForGate.BookingStart.AddMinutes(-1) > DateTime.UtcNow)
             return Result.Failure<Booking>(DeviceErrors.EntryGateOpenTooEarly);
 
         return Result.Success(CurrentBookingForGate);
@@ -314,9 +324,6 @@ public class BookingService(ApplicationDbContext context
         return Result.Success(CurrentBookingForExitGate);
     }
 
-
-
-
     public async Task<Result> CancelBookingAsync(int bookingId)
     {
         var booking = await _Context.Bookings
@@ -341,6 +348,5 @@ public class BookingService(ApplicationDbContext context
 
         return Result.Success();
     }
-
 
 }

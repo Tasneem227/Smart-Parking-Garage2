@@ -8,7 +8,5 @@ public class GateErrors
     public static readonly Error GarageNotFound =
     new("Garage.Garage Not Found.", "This garage not found so we cannot assign any gate to it", StatusCodes.Status404NotFound);
 
-   
-
 
 }

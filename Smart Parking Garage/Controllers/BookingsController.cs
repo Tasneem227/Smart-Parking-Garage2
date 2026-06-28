@@ -61,6 +61,19 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
         return Ok(response);
     }
+
+    [HttpGet("garage/{garageId}")]
+    public async Task<IActionResult> GetBookingsByGarageId(int garageId, CancellationToken cancellationToken)
+    {
+        var result = await bookingService.GetBookingsByGarageIdAsync(
+            garageId,
+            cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
+    }
+
     [HasPermission(Permissions.UpdateBookings)]
     [HttpPut("{Id}")]
     public async Task<IActionResult> UpdateBookingTimeAsync([FromRoute] int Id, [FromBody]updateBookingTimeRequest request ,CancellationToken cancellationToken)
