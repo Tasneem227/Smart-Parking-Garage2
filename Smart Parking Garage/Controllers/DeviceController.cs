@@ -60,6 +60,7 @@ public class DeviceController(IDeviceService deviceService , IBookingService boo
     [HttpPost("alerts")]
     public async Task<IActionResult> GasAlert(GasAlertRequest request, CancellationToken cancellationToken)
     {
+       
         var result = await _DeviceService.GasAlertAsync(request, cancellationToken);
 
         return result.IsSuccess ? Ok("Alert Sent Successfully") : result.ToProblem();

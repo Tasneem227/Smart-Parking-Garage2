@@ -125,6 +125,16 @@ public class BookingService(ApplicationDbContext context
         }
         throw new Exception("there is no booking with this Booking Id");
     }
+
+    public async Task<Result<IEnumerable<BookingResponse>>> GetBookingsByGarageIdAsync(int garageId, CancellationToken cancellationToken = default)
+    {
+        var bookings = await _Context.Bookings
+            .Where(b => b.GarageId == garageId)
+            .ProjectToType<BookingResponse>()
+            .ToListAsync(cancellationToken);
+
+        return Result.Success<IEnumerable<BookingResponse>>(bookings);
+    }
     public async Task<List<BookingResponse>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         var Booking = await _Context.Bookings.Where(x => x.ApplicationUserId == userId).ToListAsync(cancellationToken);
@@ -325,11 +335,6 @@ public class BookingService(ApplicationDbContext context
         return Result.Success(CurrentBookingForExitGate);
     }
 
-<<<<<<< HEAD
-=======
-
-
-
     public async Task<Result> CancelBookingAsync(int bookingId)
     {
         var booking = await _Context.Bookings
@@ -355,6 +360,4 @@ public class BookingService(ApplicationDbContext context
         return Result.Success();
     }
 
-
->>>>>>> 286063d7d75fee7395e256153069788247e6fa6a
 }

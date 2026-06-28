@@ -335,12 +335,19 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
 
         if (garage is not null)
         {
-            await _notificationService.SendAsync(
-                "2e748d01-bff2-4147-9848-09e5cd5a7198",
-                "Gas Alert",
-                $"Gas leak detected in garage {garage.Name}. Immediate inspection is required.",
-                "GasAlert"
-            );
+            var users = await _Context.Users
+             .Select(u => u.Id)
+             .ToListAsync(cancellationToken);
+
+            foreach (var userId in users)
+            {
+                await _notificationService.SendAsync(
+                    userId,
+                    "Gas Alert",
+                    $"Gas leak detected in garage {garage.Name}. Immediate inspection is required.",
+                    "GasAlert"
+                );
+            }
         }
         AlertLog alertLog = gasAlertRequest.Adapt<AlertLog>();
         await _Context.AlertLogs.AddAsync(alertLog, cancellationToken);
