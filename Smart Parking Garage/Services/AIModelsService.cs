@@ -35,13 +35,6 @@ public class AIModelsService(HttpClient httpClient
             return Result.Failure<VehicleAiResponse>(
                 UserErrors.UserNotFound);
 
-        var isCustomer = await _UserManager.IsInRoleAsync(
-            user,
-            DefaultRoles.Member);
-
-        if (!isCustomer)
-            return Result.Failure<VehicleAiResponse>(
-                UserErrors.NotCustomer);
 
         if (uploadedImageRequest.Image == null || uploadedImageRequest.Image.Length == 0)
             return Result.Failure<VehicleAiResponse>(UploadedFileErrors.EmptyImageFile);

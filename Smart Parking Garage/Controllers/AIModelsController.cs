@@ -22,7 +22,7 @@ public class AIModelsController(IAIModelsService aIModelsService) : ControllerBa
         var result =
             await _AIModelsService.ClassifyVehicleAsync(image, User.GetUserId()!);
 
-        return Ok(result.Value);
+        return result.IsSuccess? Ok(result.Value):result.ToProblem();
     }
     [HasPermission(Permissions.Analysis)]
     [HttpPost("SlotsAnalysis")]
