@@ -45,24 +45,12 @@ public class BookingService(ApplicationDbContext context
                                                                             b.BookingEnd >= request.BookingStart
                                                                         ))
                                                                      , cancellationToken);
-        
-        if (slot is null) {
-            return Result.Failure<BookingResponse>(ParkingSlotErrors.NoEmptySlotForCarType);
-        }
-        if (slot.SlotNumber == "1" || slot.SlotNumber == "2")
+
+
+        if (slot is null)
         {
-            try
-            {
-                var deviceService =
-                _ServiceProvider.GetRequiredService<IDeviceService>();
-                await deviceService.CaptureImageAsync();
-            }
-            catch (Exception ex)
-            {
-                _Logger.LogWarning(ex,
-                    "Image capture failed for slot {SlotNumber}",
-                    slot.SlotNumber);
-            }
+            return Result.Failure<BookingResponse>(
+                ParkingSlotErrors.NoEmptySlotForCarType);
         }
         Booking booking = request.Adapt<Booking>();
         booking.ParkingSlotId = slot.ParkingSlotId;
@@ -113,6 +101,7 @@ public class BookingService(ApplicationDbContext context
                  SlotNumber = b.ParkingSlot != null ? b.ParkingSlot.SlotNumber : null,
                  GarageId = b.GarageId
              })
+             .OrderByDescending(x=>x.BookingId)
              .ToListAsync(cancellationToken);
     }
 

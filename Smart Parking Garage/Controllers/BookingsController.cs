@@ -9,6 +9,7 @@ using System.Security.Claims;
 namespace Smart_Parking_Garage.Controllers;
 [Route("api/[controller]")]
 [ApiController]
+
 public class BookingsController(IBookingService bookingService) : ControllerBase
 {
     private readonly IBookingService _BookingService = bookingService;
@@ -99,14 +100,14 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         return NoContent();
     }
     [HasPermission(Permissions.DeleteBookingsByUserId)]
-    [HttpDelete("last-booking/{userId}")]
+    [HttpDelete("last-booking")]
     public async Task<IActionResult> DeleteLastBookingByUserId(
     string userId,
     CancellationToken cancellationToken)
     {
         try
         {
-            await _BookingService.DeleteByLastBookingByUserId(userId, cancellationToken);
+            await _BookingService.DeleteByLastBookingByUserId(User.GetUserId(), cancellationToken);
             return Ok("Last booking deleted successfully");
         }
         catch (Exception ex)

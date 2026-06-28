@@ -366,6 +366,7 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
         }
         var capturedImage = await _Context.CapturedImages
             .AsNoTracking()
+            .OrderByDescending(x=>x.Id)
             .FirstOrDefaultAsync(
                 x => x.CommandId == command.Id,
                 cancellationToken);
