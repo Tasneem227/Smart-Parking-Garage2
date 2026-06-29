@@ -26,7 +26,7 @@ public class BookingStatusBackgroundService : BackgroundService
                 var context = scope.ServiceProvider
                     .GetRequiredService<ApplicationDbContext>();
 
-                var now = DateTime.UtcNow;
+                var now = DateTime.UtcNow.AddHours(3);
 
                 // Pending -> Active
                 var activatedCount = await context.Bookings

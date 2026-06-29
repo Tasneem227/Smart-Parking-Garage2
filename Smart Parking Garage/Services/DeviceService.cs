@@ -375,14 +375,10 @@ public class DeviceService(IWebHostEnvironment webHostEnvironment
             return Result.Failure<ParkingAiResponse>(
                 UploadedFileErrors.ImageNotFound);
 
-        var response = string.IsNullOrWhiteSpace(capturedImage.AnalysisJson)
-                             ? new ParkingAiResponse()
-                             : JsonSerializer.Deserialize<ParkingAiResponse>(
-                                 capturedImage.AnalysisJson)!;
+        ParkingAiResponse parkingAiResponse = new ParkingAiResponse { ImageUrl=capturedImage.ImageUrl };
 
-        response.ImageUrl = capturedImage.ImageUrl;
 
-        return Result.Success(response);
+        return Result.Success(parkingAiResponse);
     }
 
 }

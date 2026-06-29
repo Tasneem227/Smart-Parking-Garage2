@@ -24,7 +24,7 @@ public class AIModelsController(IAIModelsService aIModelsService) : ControllerBa
 
         return result.IsSuccess? Ok(result.Value):result.ToProblem();
     }
-    [HasPermission(Permissions.Analysis)]
+    
     [HttpPost("SlotsAnalysis")]
     public async Task<IActionResult> Analysis(
       [FromForm] UploadedGarageImageRequest photo)

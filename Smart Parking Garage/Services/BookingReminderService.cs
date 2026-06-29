@@ -30,13 +30,13 @@ public class BookingReminderService : BackgroundService
 
                 var bookings = await context.Bookings
                     .Include(b => b.ParkingSlot)
-                    .Where(b => b.Status == "Active")
+                    .Where(b => b.Status == "Pending")
                     .Include(G => G.Garage)
                     .ToListAsync(stoppingToken);
 
                 foreach (var booking in bookings)
                 {
-                    var minutesLeft = (booking.BookingEnd.Value - now).TotalMinutes;
+                    var minutesLeft = (booking.BookingStart - now).TotalMinutes;
 
                     if (!booking.ReminderSent &&
                         minutesLeft <= 15 &&
