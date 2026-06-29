@@ -115,11 +115,26 @@ public class BookingService(ApplicationDbContext context
         throw new Exception("there is no booking with this Booking Id");
     }
 
-    public async Task<Result<IEnumerable<BookingResponse>>> GetBookingsByGarageIdAsync(int garageId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<BookingResponse>>> GetBookingsByGarageIdAsync(
+       int garageId,
+       CancellationToken cancellationToken = default)
     {
         var bookings = await _Context.Bookings
             .Where(b => b.GarageId == garageId)
-            .ProjectToType<BookingResponse>()
+            .Include(b => b.ParkingSlot)
+            .AsNoTracking()
+            .Select(b => new BookingResponse
+            {
+                BookingId = b.BookingId,
+                UserId = b.ApplicationUserId,
+                BookingStart = b.BookingStart,
+                BookingEnd = b.BookingEnd,
+                Price = b.Price,
+                Status = b.Status,
+                PriorityApplied = b.PriorityApplied,
+                SlotNumber = b.ParkingSlot != null ? b.ParkingSlot.SlotNumber : null,
+                GarageId = b.GarageId
+            })
             .ToListAsync(cancellationToken);
 
         return Result.Success<IEnumerable<BookingResponse>>(bookings);
